@@ -1,5 +1,13 @@
 # 项目一句话隐性知识
 
+
+- 每个组件都会写一个Props接口，然后在组件函数那里声明类型：export default function SourceItem({ data, onDelete }: SourceItemProps) {...} 方便编译时候直接报错
+- React 组件使用 **PascalCase**（如 `SourceItem`、`SourcesList`），一个组件一个 `.tsx` 文件，放在 `src/components/` 下
+- CSS 文件使用 **kebab-case**（如 `source-item.css`、`sources-list.css`），一个组件一个 CSS 文件，放在 `src/css/` 下，文件名与组件名对应：`SourceItem.tsx` → `source-item.css`
+- CSS 类名使用 **kebab-case**，以组件名缩写或功能名为前缀（如 `.source-item-name`、`.confirm-overlay`），避免全局冲突
+- 所有 CSS 文件必须在 `main.tsx` 中统一引用
+- 配色**必须使用** `root.css` 中定义的 CSS 变量（`--color-primary-*` 森绿系、`--color-danger-*` 玫瑰红系），严禁硬编码颜色值
+- 公共类型定义放在 `src/types.ts`
 - `main.go` 只负责路由注册，`database.go` 负责数据库初始化与操作，职责分离
 - SQLite 使用 `modernc.org/sqlite`，须匿名导入 `_ "modernc.org/sqlite"` 注册驱动，然后用标准库 `database/sql` 操作
 - 所有时间统一使用 UTC，存储格式为 ISO 8601（`time.RFC3339`，如 `2024-01-15T08:30:05Z`）

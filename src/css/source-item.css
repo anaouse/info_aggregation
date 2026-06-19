@@ -1,0 +1,56 @@
+.source-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--color-primary-50);
+  border: 1px solid var(--color-primary-100);
+  border-radius: 8px;
+  transition: box-shadow 0.2s;
+}
+
+.source-item:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.source-item-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-primary-800);
+  min-width: 120px;
+}
+
+.source-item-url {
+  flex: 1;
+  font-size: 14px;
+  color: var(--color-primary-400);
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.source-item-url:hover {
+  color: var(--color-primary-500);
+  text-decoration: underline;
+}
+
+.source-item-delete-btn {
+  padding: 6px 14px;
+  font-size: 13px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  background: var(--color-danger-400);
+  color: #fff;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.source-item-delete-btn:hover {
+  background: var(--color-danger-500);
+}
+
+.source-item-delete-btn:active {
+  background: var(--color-danger-600);
+}

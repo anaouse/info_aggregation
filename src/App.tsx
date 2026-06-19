@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import Source, { type SourceData } from "@/source";
+import type { SourceData } from "@/types";
+import SourcesList from "@/components/SourcesList";
+import AddSourceBar from "@/components/AddSourceBar";
 
 const API_BASE = "http://localhost:1233";
 
@@ -49,27 +51,14 @@ export default function App() {
 
   return (
     <div className="app">
-      <h1>信息源聚合</h1>
-      <div className="add-source">
-        <input
-          type="text"
-          placeholder="信息源名称"
-          value={newName}
-          onChange={(e) => setNewName(e.target.value)}
-        />
-        <input
-          type="text"
-          placeholder="URL"
-          value={newUrl}
-          onChange={(e) => setNewUrl(e.target.value)}
-        />
-        <button onClick={handleAdd}>添加</button>
-      </div>
-      <div className="source-list">
-        {sources.map((source) => (
-          <Source key={source.url} data={source} onDelete={handleDelete} />
-        ))}
-      </div>
+      <AddSourceBar
+        name={newName}
+        url={newUrl}
+        onNameChange={setNewName}
+        onUrlChange={setNewUrl}
+        onAdd={handleAdd}
+      />
+      <SourcesList sources={sources} onDelete={handleDelete} />
     </div>
   );
 }

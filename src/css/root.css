@@ -1,0 +1,23 @@
+/* =============================================
+   森绿 × 玫瑰红 配色系统
+   ============================================= */
+
+:root {
+  /* --- 主色调：森绿 Green --- */
+  --color-primary-50:  #eff5f2;   /* 浅底色、悬浮背景 */
+  --color-primary-100: #c0d7cb;   /* 边框、分割线 */
+  --color-primary-200: #90baa4;   /* 禁用状态 */
+  --color-primary-400: #619c7d;   /* ★ 品牌主色 / CTA 按钮 */
+  --color-primary-500: #578c71;   /* hover 状态 */
+  --color-primary-600: #446d58;   /* active 状态 */
+  --color-primary-800: #273e32;   /* 深色文字、图标 */
+
+  /* --- 警示色：玫瑰红 Rose (用于破坏性/警示按钮) --- */
+  --color-danger-50:  #f4eeef;   /* 警示浅底色 */
+  --color-danger-100: #d5bcc0;   /* 警示边框 */
+  --color-danger-200: #b58a90;   /* 禁用警示 */
+  --color-danger-400: #955861;   /* ★ 警示主色 */
+  --color-danger-500: #864f57;   /* danger hover */
+  --color-danger-600: #7a3845;   /* danger active */
+  --color-danger-800: #5c2f37;   /* 深色警示文字 */
+}

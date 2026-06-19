@@ -1,0 +1,52 @@
+.add-source-bar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.add-source-bar input {
+  padding: 8px 12px;
+  font-size: 14px;
+  border: 1px solid var(--color-primary-100);
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.2s;
+  background: #fff;
+  color: var(--color-primary-800);
+}
+
+.add-source-bar input::placeholder {
+  color: var(--color-primary-200);
+}
+
+.add-source-bar input:focus {
+  border-color: var(--color-primary-400);
+}
+
+.add-source-bar input:first-child {
+  width: 180px;
+}
+
+.add-source-bar input:last-of-type {
+  flex: 1;
+}
+
+.add-source-bar button {
+  padding: 8px 20px;
+  font-size: 14px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  background: var(--color-primary-400);
+  color: #fff;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.add-source-bar button:hover {
+  background: var(--color-primary-500);
+}
+
+.add-source-bar button:active {
+  background: var(--color-primary-600);
+}
