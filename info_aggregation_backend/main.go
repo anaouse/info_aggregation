@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/gin-contrib/cors"
@@ -13,9 +14,16 @@ type Source struct {
 }
 
 func main() {
+	// 初始化 SQLite
+	db, err := InitDB("./data/info_aggregation.sqlite")
+	if err != nil {
+		log.Fatalf("数据库初始化失败: %v", err)
+	}
+	defer db.Close()
+
 	r := gin.Default()
 
-	// CORS: 允许 localhost:5137 跨域
+	// CORS: 允许 localhost:5173 跨域
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:5173"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
@@ -30,12 +38,21 @@ func main() {
 	})
 
 	r.GET("/api/sources", func(c *gin.Context) {
-		sources := []Source{
-			{SourceName: "Hacker News", URL: "https://news.ycombinator.com"},
-			{SourceName: "GitHub Trending", URL: "https://github.com/trending"},
-			{SourceName: "React Blog", URL: "https://react.dev/blog"},
-			{SourceName: "Vite", URL: "https://vitejs.dev"},
-			{SourceName: "MDN Web Docs", URL: "https://developer.mozilla.org"},
+		rows, err := db.Query("SELECT source_name, url FROM info_sources")
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		defer rows.Close()
+
+		var sources []Source
+		for rows.Next() {
+			var s Source
+			if err := rows.Scan(&s.SourceName, &s.URL); err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				return
+			}
+			sources = append(sources, s)
 		}
 		c.JSON(http.StatusOK, sources)
 	})
