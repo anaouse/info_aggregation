@@ -2,7 +2,11 @@
 
 ```
 {
-  "source_name": "xxx",
-  "url": "https://xxx"
+  "source_name": "xxx", // str
+  "url": "https://xxx" // str
 }
 ```
+
+# 后端
+
+- go的gin作为后端
