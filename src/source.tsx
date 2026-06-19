@@ -5,9 +5,10 @@ export interface SourceData {
 
 interface SourceProps {
   data: SourceData;
+  onDelete: (url: string) => void;
 }
 
-export default function Source({ data }: SourceProps) {
+export default function Source({ data, onDelete }: SourceProps) {
   const { source_name, url } = data;
 
   return (
@@ -16,6 +17,9 @@ export default function Source({ data }: SourceProps) {
       <a className="source-url" href={url} target="_blank" rel="noopener noreferrer">
         {url}
       </a>
+      <button className="source-delete-btn" onClick={() => onDelete(url)}>
+        删除
+      </button>
     </div>
   );
 }

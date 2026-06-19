@@ -5,6 +5,7 @@
 - 所有时间统一使用 UTC，存储格式为 ISO 8601（`time.RFC3339`，如 `2024-01-15T08:30:05Z`）
 - 数据库结构变更必须通过 `migrations/` 迁移系统，严禁手动改库，否则 `schema_migrations` 表与实际结构不一致会导致迁移系统混乱
 - `migrations/migrations.go` 定义迁移列表（Version、Name、Up SQL），`migrations/runner.go` 负责执行并在 `schema_migrations` 表中记录已跑版本，`database.go` 的 `InitDB()` 只需调用 `migrations.Run(db)`
+- 迁移系统只管理数据库结构变更（DDL），启动时按版本顺序执行，跑过即跳过；前端的增删查改操作的是数据行（DML），不触碰 `schema_migrations` 表，两者互不干扰——v2 那种数据修正是一次性补丁，伴随结构变更设置，不是常驻逻辑
 - 数据库文件放在后端的 `./data/info_aggregation.sqlite`
 - 前端 HTTP 请求使用 `axios`，API 基址通过 `API_BASE` 常量统一管理
 - 我新入门node.js生态，这是一个react/vite，使用tsx编写的信息源聚合工具，我写着来练习react以及typescript
