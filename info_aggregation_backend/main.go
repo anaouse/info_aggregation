@@ -24,9 +24,9 @@ func main() {
 
 	r := gin.Default()
 
-	// CORS: 允许 localhost:5173 跨域
+	// CORS: 允许 localhost:5173 4000 跨域
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:5173"},
+		AllowOrigins:     []string{"http://localhost:5173","http://localhost:4000"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Accept"},
 		AllowCredentials: true,

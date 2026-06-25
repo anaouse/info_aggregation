@@ -21,4 +21,4 @@
 - `source.tsx` 只负责单条数据渲染，容器组件 `App.tsx` 负责数据持有和组合
 - css 统一放在 `src/css/` 下，然后在 `main.tsx` 中全部引用
 - 后端接口统一以 `/api` 为前缀（如 `/api/sources`），方便生产环境 Nginx 反向代理分流前后端请求
-- 前端开发端口5173（Vite 默认），后端端口1233，后端使用gin框架，使用air热重载，跨域中间件使用：`github.com/gin-contrib/cors`
+- 前端开发端口5173（Vite 默认），前端部署端口4000，后端端口1233，后端使用gin框架，使用air热重载，跨域中间件使用：`github.com/gin-contrib/cors`
