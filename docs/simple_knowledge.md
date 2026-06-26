@@ -1,5 +1,8 @@
 # 项目一句话隐性知识
 
+- 路由使用 `react-router-dom`，`BrowserRouter` + `Routes` + `Route` 配置在 `App.tsx`，`Header` 放在路由外层所有页面共享；导航链接用 `<Link to="">`，当前路径用 `useLocation().pathname` 获取
+- 页面级组件放在 `src/pages/`，新增页面两步：① 在 `src/pages/` 下新建 `XxxPage.tsx`，② 在 `App.tsx` 的 `<Routes>` 里加一行 `<Route path="/xxx" element={<XxxPage />} />`，同时在 `Header.tsx` 的 `navItems` 数组里加对应条目
+
 
 - 每个组件都会写一个Props接口，然后在组件函数那里声明类型：export default function SourceItem({ data, onDelete }: SourceItemProps) {...} 方便编译时候直接报错
 - React 组件使用 **PascalCase**（如 `SourceItem`、`SourcesList`），一个组件一个 `.tsx` 文件，放在 `src/components/` 下
