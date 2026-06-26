@@ -35,4 +35,17 @@ SET create_at = REPLACE(create_at, ' ', 'T') || 'Z'
 WHERE create_at NOT LIKE '%T%';
 `,
 	},
+	{
+		Version: 3,
+		Name:    "create_predictions",
+		Up: `
+CREATE TABLE IF NOT EXISTS predictions (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    text       TEXT    NOT NULL,
+    done       INTEGER NOT NULL DEFAULT 0,
+    updated_at TEXT    NOT NULL,
+    created_at TEXT    NOT NULL
+);
+`,
+	},
 }

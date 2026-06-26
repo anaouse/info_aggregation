@@ -14,6 +14,23 @@ type Source struct {
 	URL        string `json:"url"`
 }
 
+type Prediction struct {
+	ID        int    `json:"id"`
+	Text      string `json:"text"`
+	Done      int    `json:"done"`
+	UpdatedAt string `json:"updated_at"`
+	CreatedAt string `json:"created_at"`
+}
+
+type PredictionCreateRequest struct {
+	Text string `json:"text"`
+}
+
+type PredictionUpdateRequest struct {
+	Text *string `json:"text"`
+	Done *int    `json:"done"`
+}
+
 func main() {
 	// 初始化 SQLite
 	db, err := InitDB("./data/info_aggregation.sqlite")
@@ -102,6 +119,108 @@ func main() {
 			return
 		}
 		c.JSON(http.StatusOK, gin.H{"message": "删除成功"})
+	})
+
+	// GET /api/predictions - 查所有预言
+	r.GET("/api/predictions", func(c *gin.Context) {
+		rows, err := db.Query("SELECT id, text, done, updated_at, created_at FROM predictions")
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		defer rows.Close()
+
+		var predictions []Prediction
+		for rows.Next() {
+			var p Prediction
+			if err := rows.Scan(&p.ID, &p.Text, &p.Done, &p.UpdatedAt, &p.CreatedAt); err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				return
+			}
+			predictions = append(predictions, p)
+		}
+		if predictions == nil {
+			predictions = []Prediction{}
+		}
+		c.JSON(http.StatusOK, predictions)
+	})
+
+	// POST /api/predictions - 新建预言
+	r.POST("/api/predictions", func(c *gin.Context) {
+		var req PredictionCreateRequest
+		if err := c.ShouldBindJSON(&req); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "请求格式错误"})
+			return
+		}
+		if req.Text == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "text 不能为空"})
+			return
+		}
+
+		now := time.Now().UTC().Format(time.RFC3339)
+		result, err := db.Exec(
+			"INSERT INTO predictions (text, done, updated_at, created_at) VALUES (?, 0, ?, ?)",
+			req.Text, now, now,
+		)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		id, _ := result.LastInsertId()
+		c.JSON(http.StatusCreated, Prediction{
+			ID:        int(id),
+			Text:      req.Text,
+			Done:      0,
+			UpdatedAt: now,
+			CreatedAt: now,
+		})
+	})
+
+	// PUT /api/predictions/:id - 更新预言
+	r.PUT("/api/predictions/:id", func(c *gin.Context) {
+		id := c.Param("id")
+
+		var req PredictionUpdateRequest
+		if err := c.ShouldBindJSON(&req); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "请求格式错误"})
+			return
+		}
+		if req.Text == nil && req.Done == nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "至少提供 text 或 done 其中一个字段"})
+			return
+		}
+
+		now := time.Now().UTC().Format(time.RFC3339)
+		if req.Text != nil && req.Done != nil {
+			_, err = db.Exec(
+				"UPDATE predictions SET text = ?, done = ?, updated_at = ? WHERE id = ?",
+				*req.Text, *req.Done, now, id,
+			)
+		} else if req.Text != nil {
+			_, err = db.Exec(
+				"UPDATE predictions SET text = ?, updated_at = ? WHERE id = ?",
+				*req.Text, now, id,
+			)
+		} else {
+			_, err = db.Exec(
+				"UPDATE predictions SET done = ?, updated_at = ? WHERE id = ?",
+				*req.Done, now, id,
+			)
+		}
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		var p Prediction
+		err = db.QueryRow(
+			"SELECT id, text, done, updated_at, created_at FROM predictions WHERE id = ?", id,
+		).Scan(&p.ID, &p.Text, &p.Done, &p.UpdatedAt, &p.CreatedAt)
+		if err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "预言不存在"})
+			return
+		}
+		c.JSON(http.StatusOK, p)
 	})
 
 	r.Run(":1233")

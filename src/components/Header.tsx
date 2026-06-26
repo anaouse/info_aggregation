@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 const navItems = [
   { label: "Home", path: "/" },
   { label: "Page1", path: "/page1" },
+  { label: "Predictions", path: "/predictions" },
 ];
 
 export default function Header() {

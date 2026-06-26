@@ -1,0 +1,82 @@
+.prediction-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--color-primary-50);
+  border: 1px solid var(--color-primary-100);
+  border-radius: 8px;
+  transition: box-shadow 0.2s;
+}
+
+.prediction-item:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* 状态指示灯 */
+.prediction-item-indicator {
+  flex-shrink: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-top: 6px;
+}
+
+.prediction-item-indicator.done {
+  background: var(--color-primary-400);
+  box-shadow: 0 0 6px var(--color-primary-400);
+}
+
+.prediction-item-indicator.pending {
+  background: var(--color-danger-400);
+  box-shadow: 0 0 6px var(--color-danger-400);
+}
+
+/* 文字编辑区 */
+.prediction-item-text {
+  flex: 1;
+  height: 80px;
+  padding: 6px 10px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-primary-800);
+  background: #fff;
+  border: 1px solid var(--color-primary-100);
+  border-radius: 6px;
+  resize: none;
+  overflow-y: auto;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.prediction-item-text:focus {
+  border-color: var(--color-primary-400);
+}
+
+/* 操作按钮组 */
+.prediction-item-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.prediction-item-btn {
+  padding: 6px 14px;
+  font-size: 13px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  background: var(--color-primary-400);
+  color: #fff;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.prediction-item-btn:hover {
+  background: var(--color-primary-500);
+}
+
+.prediction-item-btn:active {
+  background: var(--color-primary-600);
+}
