@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Header from "@/components/Header";
 import HomePage from "@/pages/HomePage";
-import Page1 from "@/pages/Page1";
+import ToolsPage from "@/pages/ToolsPage";
 import PredictionsPage from "@/pages/PredictionsPage";
 
 export default function App() {
@@ -11,7 +11,7 @@ export default function App() {
         <Header />
         <Routes>
           <Route path="/" element={<HomePage />} />
-          <Route path="/page1" element={<Page1 />} />
+          <Route path="/tools" element={<ToolsPage />} />
           <Route path="/predictions" element={<PredictionsPage />} />
         </Routes>
       </div>

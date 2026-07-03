@@ -29,5 +29,5 @@ WshShell.CurrentDirectory = backendDir
 WshShell.Run backendDir & "\info_aggregation_backend.exe", 0, False
 
 MsgBox "✓ Deploy complete!" & vbCrLf & vbCrLf & _
-       "Frontend:  http://localhost:5989" & vbCrLf & _
+       "Frontend:  http://localhost:4000" & vbCrLf & _
        "Backend:   http://localhost:1233", 64, "Info Aggregation"
