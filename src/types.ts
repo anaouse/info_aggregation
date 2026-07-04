@@ -10,3 +10,17 @@ export interface PredictionData {
   updated_at: string;
   created_at: string;
 }
+
+export interface AssetItem {
+  name: string;
+  amount: number;
+}
+
+export interface AssetSnapshot {
+  id: number;
+  assets_snapshot_date: string;
+  assets: AssetItem[];
+  total: number | null;
+  created_at: string;
+  updated_at: string;
+}

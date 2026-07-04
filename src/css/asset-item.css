@@ -1,0 +1,66 @@
+.asset-item {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+  align-items: center;
+}
+
+.asset-item-name {
+  flex: 2;
+  padding: 8px 12px;
+  font-size: 14px;
+  border: 1px solid var(--color-primary-100);
+  border-radius: 8px;
+  outline: none;
+  background: #fff;
+  color: var(--color-primary-800);
+  transition: border-color 0.2s;
+}
+
+.asset-item-name::placeholder {
+  color: var(--color-primary-200);
+}
+
+.asset-item-name:focus {
+  border-color: var(--color-primary-400);
+}
+
+.asset-item-amount {
+  flex: 1;
+  padding: 8px 12px;
+  font-size: 14px;
+  border: 1px solid var(--color-primary-100);
+  border-radius: 8px;
+  outline: none;
+  background: #fff;
+  color: var(--color-primary-800);
+  transition: border-color 0.2s;
+}
+
+.asset-item-amount::placeholder {
+  color: var(--color-primary-200);
+}
+
+.asset-item-amount:focus {
+  border-color: var(--color-primary-400);
+}
+
+.asset-item-delete {
+  padding: 8px 14px;
+  font-size: 13px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  background: var(--color-danger-400);
+  color: #fff;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.asset-item-delete:hover {
+  background: var(--color-danger-500);
+}
+
+.asset-item-delete:active {
+  background: var(--color-danger-600);
+}

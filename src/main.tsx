@@ -10,5 +10,7 @@ import '@/css/add-prediction-bar.css'
 import '@/css/prediction-item.css'
 import '@/css/predictions-list.css'
 import '@/css/timer.css'
+import '@/css/asset-item.css'
+import '@/css/assets-list.css'
 
 createRoot(document.getElementById('root')!).render(<App />)
