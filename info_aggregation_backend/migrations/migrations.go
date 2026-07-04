@@ -48,4 +48,17 @@ CREATE TABLE IF NOT EXISTS predictions (
 );
 `,
 	},
+	{
+		Version: 4,
+		Name:    "create_assets_snapshots",
+		Up: `
+CREATE TABLE IF NOT EXISTS assets_snapshots (
+    id                   INTEGER PRIMARY KEY AUTOINCREMENT,
+    assets_snapshot_date TEXT    NOT NULL UNIQUE,
+    assets               TEXT    NOT NULL,
+    created_at           TEXT    NOT NULL,
+    updated_at           TEXT    NOT NULL
+);
+`,
+	},
 }
