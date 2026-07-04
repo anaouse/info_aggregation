@@ -12,5 +12,6 @@ import '@/css/predictions-list.css'
 import '@/css/timer.css'
 import '@/css/asset-item.css'
 import '@/css/assets-list.css'
+import '@/css/total-money-chart.css'
 
 createRoot(document.getElementById('root')!).render(<App />)

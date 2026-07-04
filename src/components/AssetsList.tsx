@@ -122,7 +122,7 @@ export default function AssetsList() {
           <input
             type="number"
             className="assets-list-total"
-            placeholder="总金额（可选）"
+            placeholder="总金额"
             value={total}
             onChange={(e) => setTotal(e.target.value)}
           />

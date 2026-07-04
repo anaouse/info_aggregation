@@ -1,0 +1,21 @@
+.total-money-chart {
+  max-width: 720px;
+  margin: 0 auto 24px;
+  padding: 20px;
+  background: var(--color-primary-50);
+  border-radius: 12px;
+}
+
+.total-money-chart-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-primary-800);
+  margin: 0 0 12px;
+}
+
+.total-money-chart-empty {
+  color: var(--color-primary-200);
+  font-size: 14px;
+  text-align: center;
+  padding: 20px 0;
+}

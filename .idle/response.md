@@ -1,17 +1,10 @@
-全部完成。改动汇总：
+完成。改动总结：
 
-### 后端
-
-| 文件 | 改动 |
+| 文件 | 操作 |
 |------|------|
-| `migrations/migrations.go` | 新增 v5：`ALTER TABLE assets_snapshots ADD COLUMN total REAL`（可空） |
-| `main.go` | `AssetSnapshotRequest` / `AssetSnapshot` 加 `Total *float64`；GET/POST 查询和写入 `total` |
+| `src/components/TotalMoneyChart.tsx` | **新建** — 自己 GET 数据，过滤 `total != null`，按日期升序绘折线图，空数据显示提示 |
+| `src/css/total-money-chart.css` | **新建** — 图表容器样式 |
+| `src/pages/AssetsPage.tsx` | 顶部加 `<TotalMoneyChart />`，下方 `<AssetsList />` |
+| `src/main.tsx` | 引用 `total-money-chart.css` |
 
-### 前端
-
-| 文件 | 改动 |
-|------|------|
-| `src/types.ts` | `AssetSnapshot` 加 `total: number \| null` |
-| `AssetItem.tsx` | placeholder `"金额"` → `"数量"` |
-| `AssetsList.tsx` | 新增 `total` state + 输入框；POST 带 `total`；历史表格恢复"总金额"列，`null` 时显示空；点击回填时同步恢复 total |
-| `assets-list.css` | 新增 `.assets-list-total` 样式，恢复 `.assets-list-table-total` |
+图表只显示有 `total` 的快照点，X 轴 `YYYY-MM`，Y 轴总金额，线色森绿。
