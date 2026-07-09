@@ -1,10 +1,22 @@
-完成。改动总结：
+改动已经完成了。总结一下做了什么：
 
-| 文件 | 操作 |
-|------|------|
-| `src/components/TotalMoneyChart.tsx` | **新建** — 自己 GET 数据，过滤 `total != null`，按日期升序绘折线图，空数据显示提示 |
-| `src/css/total-money-chart.css` | **新建** — 图表容器样式 |
-| `src/pages/AssetsPage.tsx` | 顶部加 `<TotalMoneyChart />`，下方 `<AssetsList />` |
-| `src/main.tsx` | 引用 `total-money-chart.css` |
+### 变更摘要（仅 `PredictionItem.tsx`）
 
-图表只显示有 `total` 的快照点，X 轴 `YYYY-MM`，Y 轴总金额，线色森绿。
+| 改动 | 说明 |
+|---|---|
+| **新增 debounce** | 每次输入时重置 800ms 定时器，停手 800ms 后自动发 PUT 保存 |
+| **删除"更新内容"按钮** | 不再需要手动点击，按钮已移除 |
+| **`textRef` 存最新值** | 保证定时器到期时拿到的永远是用户最后一次输入的内容，而不是过时的闭包值 |
+| **组件卸载时清理定时器** | 避免内存泄漏 |
+| **外部 `data.text` 变更时同步** | 比如后续你加了 WebSocket 实时同步之类的场景，本地 text 能跟上外部变化 |
+
+### 行为一览
+
+```
+用户输入 → setText（UI 即时响应）
+         → clearTimeout 旧 timer → 设新 800ms timer
+         → 800ms 内继续输入就重置 timer
+         → 停手 800ms → axios PUT → onUpdate 更新父组件列表
+```
+
+代码可以直接跑，不需要改任何其他文件。你可以试一下，有什么需要调整的随时说。
