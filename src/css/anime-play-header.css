@@ -1,0 +1,33 @@
+.anime-play-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  background: var(--color-primary-800);
+  padding: 12px 24px;
+  box-sizing: border-box;
+}
+
+.anime-play-header-back-btn {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 6px 12px;
+  border-radius: 6px;
+  transition: background 0.15s, border-color 0.15s;
+  color: #fff;
+  font-weight: 500;
+}
+
+.anime-play-header-back-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.anime-play-header-name {
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+}

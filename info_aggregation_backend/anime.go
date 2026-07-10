@@ -23,6 +23,13 @@ type AnimeScanRequest struct {
 	RootPath string `json:"rootPath"`
 }
 
+// VideoFile represents a single video file found inside an anime folder.
+type VideoFile struct {
+	Name string `json:"name"`
+	Path string `json:"path"`
+	Size int64  `json:"size"`
+}
+
 var videoExtensions = map[string]bool{
 	".mp4":  true,
 	".mkv":  true,
@@ -82,6 +89,32 @@ func scanAnimeRoot(rootPath string) ([]AnimeInfo, error) {
 	return animes, nil
 }
 
+// scanVideosInFolder recursively finds all video files in the given folder.
+func scanVideosInFolder(folderPath string) ([]VideoFile, error) {
+	var videos []VideoFile
+
+	err := filepath.WalkDir(folderPath, func(path string, d os.DirEntry, err error) error {
+		if err != nil || d.IsDir() {
+			return nil
+		}
+		ext := strings.ToLower(filepath.Ext(d.Name()))
+		if videoExtensions[ext] {
+			info, err := d.Info()
+			if err != nil {
+				return nil
+			}
+			videos = append(videos, VideoFile{
+				Name: d.Name(),
+				Path: path,
+				Size: info.Size(),
+			})
+		}
+		return nil
+	})
+
+	return videos, err
+}
+
 // registerAnimeRoutes wires up the anime scanning and cover-serving endpoints.
 func registerAnimeRoutes(r *gin.Engine) {
 	// POST /api/anime/scan - scan the given root directory for anime folders
@@ -111,6 +144,51 @@ func registerAnimeRoutes(r *gin.Engine) {
 		}
 
 		c.JSON(http.StatusOK, gin.H{"animes": animes})
+	})
+
+	// GET /api/anime/videos?folderPath=xxx - list all video files in a folder
+	r.GET("/api/anime/videos", func(c *gin.Context) {
+		folderPath := c.Query("folderPath")
+		if folderPath == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "folderPath 不能为空"})
+			return
+		}
+
+		stat, err := os.Stat(folderPath)
+		if err != nil || !stat.IsDir() {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "路径不存在或不是文件夹"})
+			return
+		}
+
+		videos, err := scanVideosInFolder(folderPath)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"videos": videos})
+	})
+
+	// GET /api/anime/video?path=xxx - stream a single video file (supports Range)
+	r.GET("/api/anime/video", func(c *gin.Context) {
+		path := c.Query("path")
+		if path == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "path 不能为空"})
+			return
+		}
+
+		ext := strings.ToLower(filepath.Ext(path))
+		if !videoExtensions[ext] {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "不支持的视频格式"})
+			return
+		}
+
+		if _, err := os.Stat(path); err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "文件不存在"})
+			return
+		}
+
+		c.File(path)
 	})
 
 	// GET /api/anime/cover?path=xxx - serve a cover image file by absolute path

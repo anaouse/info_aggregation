@@ -39,3 +39,13 @@ export interface AnimeInfo {
 export interface AnimeScanResponse {
   animes: AnimeInfo[];
 }
+
+export interface VideoFile {
+  name: string;
+  path: string;
+  size: number;
+}
+
+export interface VideosResponse {
+  videos: VideoFile[];
+}

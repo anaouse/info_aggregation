@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import type { AnimeInfo } from "@/types";
 
 const API_BASE = "http://localhost:1233";
@@ -8,9 +9,14 @@ interface AnimeItemProps {
 
 export default function AnimeItem({ data }: AnimeItemProps) {
   const { name, cover_path, video_count } = data;
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    navigate(`/anime/play?name=${encodeURIComponent(name)}`);
+  };
 
   return (
-    <div className="anime-item">
+    <div className="anime-item" onClick={handleClick} style={{ cursor: "pointer" }}>
       <div className="anime-item-cover">
         {cover_path ? (
           <img
