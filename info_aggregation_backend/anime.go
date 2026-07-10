@@ -1,0 +1,137 @@
+package main
+
+import (
+	"log"
+	"net/http"
+	"os"
+	"path/filepath"
+	"strings"
+
+	"github.com/gin-gonic/gin"
+)
+
+// AnimeInfo represents a single anime folder scanned from the root path.
+type AnimeInfo struct {
+	Name       string `json:"name"`
+	FolderPath string `json:"folder_path"`
+	CoverPath  string `json:"cover_path"`
+	VideoCount int    `json:"video_count"`
+}
+
+// AnimeScanRequest is the request body for scanning an anime root directory.
+type AnimeScanRequest struct {
+	RootPath string `json:"rootPath"`
+}
+
+var videoExtensions = map[string]bool{
+	".mp4":  true,
+	".mkv":  true,
+	".avi":  true,
+	".flv":  true,
+	".mov":  true,
+}
+
+var coverExtensions = map[string]bool{
+	".jpg":  true,
+	".jpeg": true,
+	".png":  true,
+}
+
+// scanAnimeRoot walks each top-level directory under rootPath and builds
+// an AnimeInfo for it: first image found is used as the cover, video files
+// are counted (recursively, since videos may sit in a nested subfolder).
+func scanAnimeRoot(rootPath string) ([]AnimeInfo, error) {
+	entries, err := os.ReadDir(rootPath)
+	if err != nil {
+		return nil, err
+	}
+
+	animes := make([]AnimeInfo, 0, len(entries))
+	for _, entry := range entries {
+		if !entry.IsDir() {
+			continue
+		}
+
+		folderPath := filepath.Join(rootPath, entry.Name())
+		info := AnimeInfo{
+			Name:       entry.Name(),
+			FolderPath: folderPath,
+		}
+
+		videoCount := 0
+		coverFound := false
+
+		filepath.WalkDir(folderPath, func(path string, d os.DirEntry, err error) error {
+			if err != nil || d.IsDir() {
+				return nil
+			}
+			ext := strings.ToLower(filepath.Ext(d.Name()))
+			if videoExtensions[ext] {
+				videoCount++
+			} else if !coverFound && coverExtensions[ext] {
+				info.CoverPath = path
+				coverFound = true
+			}
+			return nil
+		})
+
+		info.VideoCount = videoCount
+		animes = append(animes, info)
+	}
+
+	return animes, nil
+}
+
+// registerAnimeRoutes wires up the anime scanning and cover-serving endpoints.
+func registerAnimeRoutes(r *gin.Engine) {
+	// POST /api/anime/scan - scan the given root directory for anime folders
+	r.POST("/api/anime/scan", func(c *gin.Context) {
+		var req AnimeScanRequest
+		if err := c.ShouldBindJSON(&req); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "请求格式错误", "detail": err.Error()})
+			return
+		}
+		if req.RootPath == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "rootPath 不能为空"})
+			return
+		}
+		
+		log.Printf("Received scan request: rootPath=%s", req.RootPath)
+
+		stat, err := os.Stat(req.RootPath)
+		if err != nil || !stat.IsDir() {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "路径不存在或不是文件夹"})
+			return
+		}
+
+		animes, err := scanAnimeRoot(req.RootPath)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"animes": animes})
+	})
+
+	// GET /api/anime/cover?path=xxx - serve a cover image file by absolute path
+	r.GET("/api/anime/cover", func(c *gin.Context) {
+		path := c.Query("path")
+		if path == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "path 不能为空"})
+			return
+		}
+
+		ext := strings.ToLower(filepath.Ext(path))
+		if !coverExtensions[ext] {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "不支持的图片格式"})
+			return
+		}
+
+		if _, err := os.Stat(path); err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "文件不存在"})
+			return
+		}
+
+		c.File(path)
+	})
+}

@@ -77,6 +77,8 @@ func main() {
 		})
 	})
 
+	registerAnimeRoutes(r)
+
 	r.GET("/api/sources", func(c *gin.Context) {
 		rows, err := db.Query("SELECT source_name, url FROM info_sources")
 		if err != nil {

@@ -13,5 +13,8 @@ import '@/css/timer.css'
 import '@/css/asset-item.css'
 import '@/css/assets-list.css'
 import '@/css/total-money-chart.css'
+import '@/css/set-path-bar.css'
+import '@/css/anime-list.css'
+import '@/css/anime-item.css'
 
 createRoot(document.getElementById('root')!).render(<App />)

@@ -5,6 +5,7 @@ const navItems = [
   { label: "Tools", path: "/tools" },
   { label: "Predictions", path: "/predictions" },
   { label: "Assets", path: "/assets" },
+  { label: "Anime", path: "/anime" },
 ];
 
 export default function Header() {

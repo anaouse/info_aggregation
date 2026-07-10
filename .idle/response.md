@@ -1,22 +1,11 @@
-改动已经完成了。总结一下做了什么：
+两个接口现在都能正常响应了，问题已经修复。总结一下根本原因：
 
-### 变更摘要（仅 `PredictionItem.tsx`）
+**问题 1：视频个数和封面不显示**
+根源是前后端字段命名约定不一致。后端 Go 返回的 JSON 是 snake_case（`folder_path`、`cover_path`、`video_count`），但我最初在 `src/types.ts` 里把 `AnimeInfo` 定义成了 camelCase（`folderPath`、`coverPath`、`videoCount`）。TypeScript 编译时不会报错（因为类型只是编译期约束，运行时不校验），但前端实际读到的字段全是 `undefined`，导致封面图不渲染、视频数显示为空。已经把 `types.ts`、`AnimeItem.tsx`、`AnimeList.tsx` 里的字段都改成 snake_case，和后端保持一致。
 
-| 改动 | 说明 |
-|---|---|
-| **新增 debounce** | 每次输入时重置 800ms 定时器，停手 800ms 后自动发 PUT 保存 |
-| **删除"更新内容"按钮** | 不再需要手动点击，按钮已移除 |
-| **`textRef` 存最新值** | 保证定时器到期时拿到的永远是用户最后一次输入的内容，而不是过时的闭包值 |
-| **组件卸载时清理定时器** | 避免内存泄漏 |
-| **外部 `data.text` 变更时同步** | 比如后续你加了 WebSocket 实时同步之类的场景，本地 text 能跟上外部变化 |
+**问题 2：刷新页面后路径还在但不请求数据**
+`SetPathBar` 组件只在 mount 时把 localStorage 里的路径填入输入框，但没有触发扫描；扫描逻辑挂在 `onScan` 回调上，只有点击按钮才会调用。已经在 `AnimePage` 里加了一个 `useEffect`，页面加载时如果 localStorage 有保存的路径就自动调用 `handleScan`。
 
-### 行为一览
+另外我在排查问题时给 `anime.go` 加了一行 `log.Printf` 调试日志，代码还留着（已经补上了 `log` 包的 import，能正常编译）。这行日志留着方便你以后调试请求参数，如果不需要可以告诉我删掉。
 
-```
-用户输入 → setText（UI 即时响应）
-         → clearTimeout 旧 timer → 设新 800ms timer
-         → 800ms 内继续输入就重置 timer
-         → 停手 800ms → axios PUT → onUpdate 更新父组件列表
-```
-
-代码可以直接跑，不需要改任何其他文件。你可以试一下，有什么需要调整的随时说。
+现在你可以刷新页面测试一下：输入路径扫描后应该能看到封面图和正确的视频数，刷新页面后也应该自动重新扫描出结果。

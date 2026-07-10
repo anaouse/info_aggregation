@@ -24,3 +24,18 @@ export interface AssetSnapshot {
   created_at: string;
   updated_at: string;
 }
+
+export interface AnimeScanRequest {
+  rootPath: string;
+}
+
+export interface AnimeInfo {
+  name: string;
+  folder_path: string;
+  cover_path: string;
+  video_count: number;
+}
+
+export interface AnimeScanResponse {
+  animes: AnimeInfo[];
+}
