@@ -17,7 +17,8 @@ import '@/css/set-path-bar.css'
 import '@/css/anime-list.css'
 import '@/css/anime-item.css'
 import '@/css/anime-play-header.css'
-import '@/css/show-video.css'
-import '@/css/show-files.css'
+import '@/css/anime-play-page.css'
+import '@/css/custom-video-player.css'
+import '@/css/episode-selector.css'
 
 createRoot(document.getElementById('root')!).render(<App />)

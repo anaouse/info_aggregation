@@ -3,8 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import axios from "axios";
 import type { VideosResponse, VideoFile } from "@/types";
 import AnimePlayHeader from "@/components/AnimePlayHeader";
-import ShowVideo from "@/components/ShowVideo";
-import ShowFiles from "@/components/ShowFiles";
+import CustomVideoPlayer from "@/components/CustomVideoPlayer";
 
 const API_BASE = "http://localhost:1233";
 const STORAGE_KEY = "anime_root_path";
@@ -54,8 +53,13 @@ export default function AnimePlayPage() {
   return (
     <div className="anime-play-page">
       <AnimePlayHeader name={animeName} />
-      <ShowVideo videoUrl={videoUrl} autoPlay />
-      <ShowFiles videos={videos} currentPath={currentVideo?.path || null} onSelect={handleVideoSelect} />
+      <CustomVideoPlayer
+        videoUrl={videoUrl}
+        videos={videos}
+        currentPath={currentVideo?.path || null}
+        onVideoSelect={handleVideoSelect}
+        autoPlay
+      />
     </div>
   );
 }

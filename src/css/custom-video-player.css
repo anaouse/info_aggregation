@@ -1,0 +1,180 @@
+/* Custom video player container */
+.custom-video-player {
+  position: relative;
+  width: 100%;
+  background: #000;
+  flex: 1; /* Fill remaining space below header */
+  min-height: 0; /* Allow flex item to shrink below content size */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* Video element */
+.custom-video-player-video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* Keep video aspect ratio, fit within container */
+  display: block;
+  cursor: pointer;
+}
+
+/* Placeholder when no video */
+.custom-video-player-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 40px;
+  color: #888;
+  font-size: 16px;
+}
+
+.custom-video-player-placeholder-btn {
+  padding: 10px 24px;
+  background: var(--color-primary-400);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.custom-video-player-placeholder-btn:hover {
+  background: var(--color-primary-500);
+}
+
+/* Controls container */
+.custom-video-player-controls {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+  padding: 40px 20px 16px;
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+  z-index: 10; /* Ensure controls are above video */
+}
+
+.custom-video-player-controls.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Progress bar */
+.custom-video-player-progress {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+  cursor: pointer;
+  margin-bottom: 12px;
+  transition: height 0.2s;
+}
+
+.custom-video-player-progress:hover {
+  height: 8px;
+}
+
+.custom-video-player-progress-filled {
+  height: 100%;
+  background: var(--color-primary-400);
+  border-radius: 3px;
+  transition: width 0.1s linear;
+  position: relative;
+}
+
+.custom-video-player-progress-filled::after {
+  content: "";
+  position: absolute;
+  right: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 12px;
+  height: 12px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.custom-video-player-progress:hover .custom-video-player-progress-filled::after {
+  opacity: 1;
+}
+
+/* Control buttons container */
+.custom-video-player-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.custom-video-player-buttons-left,
+.custom-video-player-buttons-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Control button */
+.custom-video-player-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  font-weight: 500;
+}
+
+.custom-video-player-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.05);
+}
+
+.custom-video-player-btn:active {
+  transform: scale(0.95);
+}
+
+/* Episode selector button - special styling */
+.custom-video-player-btn-episodes {
+  background: var(--color-primary-400);
+  font-weight: 600;
+  padding: 8px 16px;
+}
+
+.custom-video-player-btn-episodes:hover {
+  background: var(--color-primary-500);
+}
+
+/* Time display */
+.custom-video-player-time {
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  margin-left: 4px;
+}
+
+/* Fullscreen adjustments */
+.custom-video-player:fullscreen {
+  min-height: 100vh;
+}
+
+.custom-video-player:fullscreen .custom-video-player-video {
+  max-height: 100vh;
+}
