@@ -1,12 +1,15 @@
 import { useEffect, useRef, useState } from "react";
-import type { VideoFile } from "@/types";
+import type { VideoFile, SubtitleFile } from "@/types";
 import EpisodeSelector from "./EpisodeSelector";
+import SubtitleSelector from "./SubtitleSelector";
 
 interface CustomVideoPlayerProps {
   videoUrl: string | null;
   videos: VideoFile[];
   currentPath: string | null;
   onVideoSelect: (video: VideoFile) => void;
+  subtitles: SubtitleFile[];
+  onSubtitleSelect: (subtitle: SubtitleFile) => void;
   autoPlay?: boolean;
 }
 
@@ -15,6 +18,8 @@ export default function CustomVideoPlayer({
   videos,
   currentPath,
   onVideoSelect,
+  subtitles,
+  onSubtitleSelect,
   autoPlay = false,
 }: CustomVideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -27,6 +32,7 @@ export default function CustomVideoPlayer({
   const [duration, setDuration] = useState(0);
   const [showControls, setShowControls] = useState(true); // Start with controls visible
   const [showEpisodeSelector, setShowEpisodeSelector] = useState(false);
+  const [showSubtitleSelector, setShowSubtitleSelector] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   // Format time as MM:SS
@@ -92,7 +98,7 @@ export default function CustomVideoPlayer({
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (showEpisodeSelector) return; // Disable shortcuts when selector is open
+      if (showEpisodeSelector || showSubtitleSelector) return; // Disable shortcuts when selector is open
       
       switch (e.key) {
         case " ":
@@ -117,7 +123,7 @@ export default function CustomVideoPlayer({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isPlaying, duration, showEpisodeSelector]);
+  }, [isPlaying, duration, showEpisodeSelector, showSubtitleSelector]);
 
   // Video event listeners
   useEffect(() => {
@@ -232,7 +238,7 @@ export default function CustomVideoPlayer({
                 </span>
               </div>
 
-              {/* Right side: episode selector, fullscreen */}
+              {/* Right side: episode selector, subtitle selector, fullscreen */}
               <div className="custom-video-player-buttons-right">
                 <button
                   className="custom-video-player-btn custom-video-player-btn-episodes"
@@ -243,6 +249,17 @@ export default function CustomVideoPlayer({
                   aria-label="Select episode"
                 >
                   选集
+                </button>
+
+                <button
+                  className="custom-video-player-btn custom-video-player-btn-episodes"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowSubtitleSelector(true);
+                  }}
+                  aria-label="Select subtitle"
+                >
+                  字幕
                 </button>
 
                 <button
@@ -275,6 +292,15 @@ export default function CustomVideoPlayer({
           currentPath={currentPath}
           onSelect={onVideoSelect}
           onClose={() => setShowEpisodeSelector(false)}
+        />
+      )}
+
+      {/* Subtitle selector */}
+      {showSubtitleSelector && (
+        <SubtitleSelector
+          subtitles={subtitles}
+          onSelect={onSubtitleSelect}
+          onClose={() => setShowSubtitleSelector(false)}
         />
       )}
     </div>

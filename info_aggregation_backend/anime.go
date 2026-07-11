@@ -46,6 +46,14 @@ var coverExtensions = map[string]bool{
 	".png":  true,
 }
 
+var subtitleExtensions = map[string]bool{
+	".ass": true,
+	".srt": true,
+	".vtt": true,
+	".ssa": true,
+	".sub": true,
+}
+
 // scanAnimeRoot walks each top-level directory under rootPath and builds
 // an AnimeInfo for it: first image found is used as the cover, video files
 // are counted (recursively, since videos may sit in a nested subfolder).
@@ -223,5 +231,81 @@ func registerAnimeRoutes(r *gin.Engine) {
 		}
 
 		c.File(path)
+	})
+
+	// GET /api/anime/subtitles?folderPath=xxx - list subtitle files in an anime folder (non-recursive)
+	r.GET("/api/anime/subtitles", func(c *gin.Context) {
+		folderPath := c.Query("folderPath")
+		if folderPath == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "folderPath 不能为空"})
+			return
+		}
+
+		stat, err := os.Stat(folderPath)
+		if err != nil || !stat.IsDir() {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "路径不存在或不是文件夹"})
+			return
+		}
+
+		entries, err := os.ReadDir(folderPath)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		type SubtitleFile struct {
+			Name string `json:"name"`
+			Path string `json:"path"`
+			Size int64  `json:"size"`
+		}
+
+		subtitles := make([]SubtitleFile, 0)
+		for _, entry := range entries {
+			if entry.IsDir() {
+				continue
+			}
+			ext := strings.ToLower(filepath.Ext(entry.Name()))
+			if subtitleExtensions[ext] {
+				info, err := entry.Info()
+				if err != nil {
+					continue
+				}
+				subtitles = append(subtitles, SubtitleFile{
+					Name: entry.Name(),
+					Path: filepath.Join(folderPath, entry.Name()),
+					Size: info.Size(),
+				})
+			}
+		}
+
+		c.JSON(http.StatusOK, gin.H{"subtitles": subtitles})
+	})
+
+	// GET /api/anime/subtitle?path=xxx - return the content of a subtitle file
+	r.GET("/api/anime/subtitle", func(c *gin.Context) {
+		path := c.Query("path")
+		if path == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "path 不能为空"})
+			return
+		}
+
+		ext := strings.ToLower(filepath.Ext(path))
+		if !subtitleExtensions[ext] {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "不支持的字幕格式"})
+			return
+		}
+
+		if _, err := os.Stat(path); err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "文件不存在"})
+			return
+		}
+
+		data, err := os.ReadFile(path)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"content": string(data)})
 	})
 }

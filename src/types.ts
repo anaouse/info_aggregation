@@ -49,3 +49,13 @@ export interface VideoFile {
 export interface VideosResponse {
   videos: VideoFile[];
 }
+
+export interface SubtitleFile {
+  name: string;
+  path: string;
+  size: number;
+}
+
+export interface SubtitlesResponse {
+  subtitles: SubtitleFile[];
+}

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import axios from "axios";
-import type { VideosResponse, VideoFile } from "@/types";
+import type { VideosResponse, VideoFile, SubtitlesResponse, SubtitleFile } from "@/types";
 import AnimePlayHeader from "@/components/AnimePlayHeader";
 import CustomVideoPlayer from "@/components/CustomVideoPlayer";
 
@@ -13,6 +13,7 @@ export default function AnimePlayPage() {
   const animeName = searchParams.get("name") || "";
   
   const [videos, setVideos] = useState<VideoFile[]>([]);
+  const [subtitles, setSubtitles] = useState<SubtitleFile[]>([]);
   const [currentVideo, setCurrentVideo] = useState<VideoFile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -27,12 +28,17 @@ export default function AnimePlayPage() {
 
     const folderPath = `${rootPath}\\${animeName}`;
     
-    axios
-      .get<VideosResponse>(`${API_BASE}/api/anime/videos`, {
+    Promise.all([
+      axios.get<VideosResponse>(`${API_BASE}/api/anime/videos`, {
         params: { folderPath },
-      })
-      .then((res) => {
-        setVideos(res.data.videos);
+      }),
+      axios.get<SubtitlesResponse>(`${API_BASE}/api/anime/subtitles`, {
+        params: { folderPath },
+      }),
+    ])
+      .then(([videosRes, subtitlesRes]) => {
+        setVideos(videosRes.data.videos);
+        setSubtitles(subtitlesRes.data.subtitles);
         setError(null);
       })
       .catch((err) => setError(err.response?.data?.error || err.message))
@@ -41,6 +47,18 @@ export default function AnimePlayPage() {
 
   const handleVideoSelect = (video: VideoFile) => {
     setCurrentVideo(video);
+  };
+
+  const handleSubtitleSelect = (subtitle: SubtitleFile) => {
+    axios
+      .get(`${API_BASE}/api/anime/subtitle`, {
+        params: { path: subtitle.path },
+      })
+      .then((res) => {
+        console.log("Subtitle content loaded:", subtitle.name, res.data.content);
+        // TODO: parse and apply subtitle content
+      })
+      .catch((err) => console.error("Failed to load subtitle:", err));
   };
 
   const videoUrl = currentVideo
@@ -58,6 +76,8 @@ export default function AnimePlayPage() {
         videos={videos}
         currentPath={currentVideo?.path || null}
         onVideoSelect={handleVideoSelect}
+        subtitles={subtitles}
+        onSubtitleSelect={handleSubtitleSelect}
         autoPlay
       />
     </div>

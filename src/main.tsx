@@ -20,5 +20,6 @@ import '@/css/anime-play-header.css'
 import '@/css/anime-play-page.css'
 import '@/css/custom-video-player.css'
 import '@/css/episode-selector.css'
+import '@/css/subtitle-selector.css'
 
 createRoot(document.getElementById('root')!).render(<App />)
