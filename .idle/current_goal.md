@@ -1,5 +1,66 @@
-看 @D:/projects/info_aggregation/src/pages/AnimePlayPage.tsx ，以及相关的组件，现在我想要的是视频开始播放
-后在选集按钮旁边多一个字幕按钮，我希望点击后类似选集，模仿 @D:/projects/info_aggregation/src/components/EpisodeSelector.
-tsx 这个组件新写一个组件，然后后端可能要新添加一个获取字幕文件列表的路由，你可以看 ../anime 这个文件夹参考我是如何排列的，大概来说就是一部番剧在一个文件夹里面，然后里面的所有视频文件都是已经有路由获取了，然后剩下的字幕文件就是直接放到番剧文件夹下。
+然后我现在希望我选中字幕后可以自动解析ass并且叠加到video上并且顺利自动跟上画面，我在网上找到了好像ass.js可以实现？我已经npm install它了
 
-先探索，然后给我你的修改计划，现在只是获取字幕列表并且点击后后端把字幕文件内容传给前端（这里后端又要一个新的路由）。先只是传递内容，之后怎么解析与使用等到之后再说
+然后还有一个参考代码，我不确定对不对：
+
+```
+import { useEffect, useRef } from 'react';
+import ASS from 'assjs';
+
+function VideoWithAss() {
+  const videoRef = useRef(null);
+  const containerRef = useRef(null);
+  const assInstanceRef = useRef(null);
+
+  useEffect(() => {
+    const initSubtitles = async () => {
+      if (!videoRef.current || !containerRef.current) return;
+
+      try {
+        // 1. 加载 ASS 文件内容
+        const response = await fetch('/path/to/your-subtitle.ass');
+        const assText = await response.text();
+
+        // 2. 创建 ASS 实例
+        assInstanceRef.current = new ASS(assText, videoRef.current, {
+          container: containerRef.current,   // 必须指定容器
+          // 可选配置
+          // resample: 'video',              // 或者 'script'
+          // delay: 0,                       // 时间偏移（秒）
+        });
+
+      } catch (err) {
+        console.error('加载字幕失败:', err);
+      }
+    };
+
+    initSubtitles();
+
+    // 组件卸载时销毁
+    return () => {
+      if (assInstanceRef.current) {
+        assInstanceRef.current.destroy?.();
+      }
+    };
+  }, []);
+
+  return (
+    <div style={{ position: 'relative', display: 'inline-block' }}>
+      <video ref={videoRef} controls width="100%" />
+      <div ref={containerRef} style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        pointerEvents: 'none'   // 让点击穿透到 video
+      }} />
+    </div>
+  );
+}
+
+export default VideoWithAss;
+```
+
+以及我希望可以做到我点击字幕后渲染到视频上，假如我再次点击那个字幕则可以隐藏，相当于现在没有选中字幕一样，先给我你的计划
+
+こんいちは

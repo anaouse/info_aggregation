@@ -2,12 +2,14 @@ import type { SubtitleFile } from "@/types";
 
 interface SubtitleSelectorProps {
   subtitles: SubtitleFile[];
+  activePath?: string | null;
   onSelect: (subtitle: SubtitleFile) => void;
   onClose: () => void;
 }
 
 export default function SubtitleSelector({
   subtitles,
+  activePath,
   onSelect,
   onClose,
 }: SubtitleSelectorProps) {
@@ -37,7 +39,9 @@ export default function SubtitleSelector({
             subtitles.map((subtitle, index) => (
               <div
                 key={subtitle.path}
-                className="subtitle-selector-item"
+                className={`subtitle-selector-item${
+                  subtitle.path === activePath ? " active" : ""
+                }`}
                 onClick={() => handleSelect(subtitle)}
               >
                 <span className="subtitle-selector-item-number">{index + 1}</span>

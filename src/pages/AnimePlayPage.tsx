@@ -15,6 +15,8 @@ export default function AnimePlayPage() {
   const [videos, setVideos] = useState<VideoFile[]>([]);
   const [subtitles, setSubtitles] = useState<SubtitleFile[]>([]);
   const [currentVideo, setCurrentVideo] = useState<VideoFile | null>(null);
+  const [activeSubtitlePath, setActiveSubtitlePath] = useState<string | null>(null);
+  const [subtitleContent, setSubtitleContent] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -50,13 +52,20 @@ export default function AnimePlayPage() {
   };
 
   const handleSubtitleSelect = (subtitle: SubtitleFile) => {
+    // Toggle off if clicking the already active subtitle
+    if (subtitle.path === activeSubtitlePath) {
+      setActiveSubtitlePath(null);
+      setSubtitleContent(null);
+      return;
+    }
+
     axios
       .get(`${API_BASE}/api/anime/subtitle`, {
         params: { path: subtitle.path },
       })
       .then((res) => {
-        console.log("Subtitle content loaded:", subtitle.name, res.data.content);
-        // TODO: parse and apply subtitle content
+        setSubtitleContent(res.data.content);
+        setActiveSubtitlePath(subtitle.path);
       })
       .catch((err) => console.error("Failed to load subtitle:", err));
   };
@@ -78,6 +87,8 @@ export default function AnimePlayPage() {
         onVideoSelect={handleVideoSelect}
         subtitles={subtitles}
         onSubtitleSelect={handleSubtitleSelect}
+        subtitleContent={subtitleContent}
+        activeSubtitlePath={activeSubtitlePath}
         autoPlay
       />
     </div>

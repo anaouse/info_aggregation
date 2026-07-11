@@ -1,25 +1,23 @@
-全部改动已完成且一致。总结一下所有修改：
+一切就绪。总结本轮改动：
 
 ---
 
 ### ✅ 改动清单
 
-| 文件 | 操作 |
+| 文件 | 改动 |
 |------|------|
-| `info_aggregation_backend/anime.go` | 新增 `subtitleExtensions` 集合 + 2 个路由 (`/api/anime/subtitles` 和 `/api/anime/subtitle`) |
-| `src/types.ts` | 新增 `SubtitleFile` 和 `SubtitlesResponse` 类型 |
-| `src/components/SubtitleSelector.tsx` | **新建** — 模仿 `EpisodeSelector` 的字幕选择面板 |
-| `src/css/subtitle-selector.css` | **新建** — 字幕选择器样式 |
-| `src/components/CustomVideoPlayer.tsx` | 新增 `subtitles`/`onSubtitleSelect` props + "字幕"按钮 + `SubtitleSelector` 渲染 |
-| `src/pages/AnimePlayPage.tsx` | `Promise.all` 并行获取视频和字幕列表 + `handleSubtitleSelect` 回调（暂 log 内容） |
-| `src/main.tsx` | 引入 `subtitle-selector.css` |
+| `src/pages/AnimePlayPage.tsx` | 新增 `activeSubtitlePath` + `subtitleContent` state；`handleSubtitleSelect` 改为 toggle 逻辑（同路径→关闭，新路径→fetch 并渲染）；传递新 props |
+| `src/components/CustomVideoPlayer.tsx` | 新增 `subtitleContent`/`activeSubtitlePath` props；引入 `assjs`；新增 `subtitleContainerRef`/`assRef`；新增 ASS 渲染 `useEffect`；JSX 中加入字幕层 `<div>`；传递 `activePath` 给 `SubtitleSelector` |
+| `src/components/SubtitleSelector.tsx` | 新增 `activePath` prop；选中项添加 `.active` class |
+| `src/css/subtitle-selector.css` | 新增 `.subtitle-selector-item.active` 系列高亮样式 |
+| `src/css/custom-video-player.css` | 新增 `.custom-video-player-subtitle-layer` 字幕层样式 |
 
-### 🔄 数据流
+### 🔄 交互流程
 
 ```
-页面加载 → Promise.all 并行请求 videos + subtitles
-播放视频 → 控制栏出现 "选集" + "字幕" 两个按钮
-点击字幕 → SubtitleSelector 弹出 → 选择字幕后 GET /api/anime/subtitle → console.log 内容
+选字幕A → ASS 渲染到视频上 → 字幕A 在列表中高亮
+再次点字幕A → ASS 销毁，字幕消失 → 无高亮
+切换到字幕B → ASS 重建，渲染字幕B → 字幕B 高亮
 ```
 
-air 热重载应该能自动编译后端和前端，直接刷新页面就能看到"字幕"按钮了。
+去页面上试试吧！

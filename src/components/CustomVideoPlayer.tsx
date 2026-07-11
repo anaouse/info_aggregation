@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { VideoFile, SubtitleFile } from "@/types";
+import ASS from "assjs";
 import EpisodeSelector from "./EpisodeSelector";
 import SubtitleSelector from "./SubtitleSelector";
 
@@ -10,6 +11,8 @@ interface CustomVideoPlayerProps {
   onVideoSelect: (video: VideoFile) => void;
   subtitles: SubtitleFile[];
   onSubtitleSelect: (subtitle: SubtitleFile) => void;
+  subtitleContent: string | null;
+  activeSubtitlePath: string | null;
   autoPlay?: boolean;
 }
 
@@ -20,11 +23,15 @@ export default function CustomVideoPlayer({
   onVideoSelect,
   subtitles,
   onSubtitleSelect,
+  subtitleContent,
+  activeSubtitlePath,
   autoPlay = false,
 }: CustomVideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const progressBarRef = useRef<HTMLDivElement>(null);
+  const subtitleContainerRef = useRef<HTMLDivElement>(null);
+  const assRef = useRef<ASS | null>(null);
   const controlsTimeoutRef = useRef<number>();
 
   const [isPlaying, setIsPlaying] = useState(false);
@@ -158,6 +165,20 @@ export default function CustomVideoPlayer({
     return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
   }, []);
 
+  // ASS subtitle rendering
+  useEffect(() => {
+    if (!subtitleContent || !videoRef.current || !subtitleContainerRef.current) return;
+
+    assRef.current = new ASS(subtitleContent, videoRef.current, {
+      container: subtitleContainerRef.current,
+    });
+
+    return () => {
+      assRef.current?.destroy();
+      assRef.current = null;
+    };
+  }, [subtitleContent]);
+
   // Auto-hide controls timeout cleanup
   useEffect(() => {
     return () => {
@@ -189,6 +210,12 @@ export default function CustomVideoPlayer({
             className="custom-video-player-video"
             autoPlay={autoPlay}
             onClick={togglePlay}
+          />
+
+          {/* Subtitle layer for ASS rendering */}
+          <div
+            ref={subtitleContainerRef}
+            className="custom-video-player-subtitle-layer"
           />
 
           {/* Controls */}
@@ -299,6 +326,7 @@ export default function CustomVideoPlayer({
       {showSubtitleSelector && (
         <SubtitleSelector
           subtitles={subtitles}
+          activePath={activeSubtitlePath}
           onSelect={onSubtitleSelect}
           onClose={() => setShowSubtitleSelector(false)}
         />

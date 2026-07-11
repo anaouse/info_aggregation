@@ -119,3 +119,18 @@
   line-height: 1.4;
   word-break: break-word;
 }
+
+.subtitle-selector-item.active {
+  background: var(--color-primary-400);
+  border-color: var(--color-primary-400);
+  color: #fff;
+}
+
+.subtitle-selector-item.active .subtitle-selector-item-number {
+  background: rgba(255, 255, 255, 0.25);
+  color: #fff;
+}
+
+.subtitle-selector-item.active .subtitle-selector-item-name {
+  color: #fff;
+}
