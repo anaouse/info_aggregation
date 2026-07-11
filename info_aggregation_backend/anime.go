@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -25,9 +26,10 @@ type AnimeScanRequest struct {
 
 // VideoFile represents a single video file found inside an anime folder.
 type VideoFile struct {
-	Name string `json:"name"`
-	Path string `json:"path"`
-	Size int64  `json:"size"`
+	Name    string `json:"name"`
+	Path    string `json:"path"`
+	Size    int64  `json:"size"`
+	ModTime int64  `json:"-"` // Unix timestamp for sorting, not exposed to frontend
 }
 
 var videoExtensions = map[string]bool{
@@ -104,15 +106,25 @@ func scanVideosInFolder(folderPath string) ([]VideoFile, error) {
 				return nil
 			}
 			videos = append(videos, VideoFile{
-				Name: d.Name(),
-				Path: path,
-				Size: info.Size(),
+				Name:    d.Name(),
+				Path:    path,
+				Size:    info.Size(),
+				ModTime: info.ModTime().Unix(),
 			})
 		}
 		return nil
 	})
 
-	return videos, err
+	if err != nil {
+		return nil, err
+	}
+
+	// Sort by creation/modification time (earliest first)
+	sort.Slice(videos, func(i, j int) bool {
+		return videos[i].ModTime < videos[j].ModTime
+	})
+
+	return videos, nil
 }
 
 // registerAnimeRoutes wires up the anime scanning and cover-serving endpoints.
