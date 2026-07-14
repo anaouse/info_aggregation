@@ -1,0 +1,45 @@
+.music-path-bar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.music-path-bar input {
+  flex: 1;
+  padding: 8px 12px;
+  font-size: 14px;
+  border: 1px solid var(--color-primary-100);
+  border-radius: 8px;
+  outline: none;
+  background: var(--color-surface);
+  color: var(--color-primary-800);
+}
+
+.music-path-bar input:focus {
+  border-color: var(--color-primary-400);
+}
+
+.music-path-bar button,
+.music-album-item button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  background: var(--color-primary-400);
+  color: var(--color-on-primary);
+  cursor: pointer;
+}
+
+.music-path-bar button:hover,
+.music-album-item button:hover:not(:disabled) {
+  background: var(--color-primary-500);
+}
+
+.music-path-bar button:active,
+.music-album-item button:active:not(:disabled) {
+  background: var(--color-primary-600);
+}
+
+.music-album-item button:disabled {
+  cursor: not-allowed;
+  background: var(--color-primary-200);
+}

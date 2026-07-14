@@ -1,66 +1,18 @@
-然后我现在希望我选中字幕后可以自动解析ass并且叠加到video上并且顺利自动跟上画面，我在网上找到了好像ass.js可以实现？我已经npm install它了
+和我一起写代码，你不用运行编译来测试代码，因为我是热重载开发，我可以直接看到，如果你修改后有问题我会告诉你
 
-然后还有一个参考代码，我不确定对不对：
+我现在想要新加入一个 MusicPage 像是AnimePage一样，有一个根路径的输入，具体是D:\projects\my_music
 
-```
-import { useEffect, useRef } from 'react';
-import ASS from 'assjs';
+里面的结构就是每个文件夹是一部专辑，文件夹名称就是专辑名称，然后文件夹里面就是音乐文件
 
-function VideoWithAss() {
-  const videoRef = useRef(null);
-  const containerRef = useRef(null);
-  const assInstanceRef = useRef(null);
+现在我想要的是MusicPage是一个播放歌曲的页面，页面的组件排列如下：
 
-  useEffect(() => {
-    const initSubtitles = async () => {
-      if (!videoRef.current || !containerRef.current) return;
+- 大部分页面都有的那个header
+- 当前播放的歌曲的信息，歌曲名称和来自的专辑，以及有一个暂停开始，拖动进度的播放进度条还有上一首下一首按钮，以及有播放模式，现在只用加入随机播放（点击随机播放后当前歌曲变为播放列表第一首，然后播放列表当中其他歌曲随机排列到当前歌曲下方），按照列表顺序播放（按顺序就是一开始的顺序）
+- 当前的播放列表（可能展示10首歌左右，然后用scroll bar，竖着展示，我可以点击其中的歌曲切歌）
+- 专辑排列组件
+  - 一个搜索栏，我可以通过输入专辑名称进行下方专辑展示的过滤
+  - 展示专辑的区域，专辑是hover的卡片样式，横着可能排列那么，目前先单纯展示专辑名称即可。然后有1个按钮，点击后清空当前播放列表，加入本专辑所有歌曲到播放列表
 
-      try {
-        // 1. 加载 ASS 文件内容
-        const response = await fetch('/path/to/your-subtitle.ass');
-        const assText = await response.text();
+值得考虑的点：然后现在肯定不涉及到数据库的操作，后端只需要加入相关读取文件夹的api，要考虑一个问题就是切换到别的page，这个MusicPage肯定我切换到别的page的时候依然可以播放出声音的。注意保持颜色风格一致
 
-        // 2. 创建 ASS 实例
-        assInstanceRef.current = new ASS(assText, videoRef.current, {
-          container: containerRef.current,   // 必须指定容器
-          // 可选配置
-          // resample: 'video',              // 或者 'script'
-          // delay: 0,                       // 时间偏移（秒）
-        });
-
-      } catch (err) {
-        console.error('加载字幕失败:', err);
-      }
-    };
-
-    initSubtitles();
-
-    // 组件卸载时销毁
-    return () => {
-      if (assInstanceRef.current) {
-        assInstanceRef.current.destroy?.();
-      }
-    };
-  }, []);
-
-  return (
-    <div style={{ position: 'relative', display: 'inline-block' }}>
-      <video ref={videoRef} controls width="100%" />
-      <div ref={containerRef} style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        pointerEvents: 'none'   // 让点击穿透到 video
-      }} />
-    </div>
-  );
-}
-
-export default VideoWithAss;
-```
-
-以及我希望可以做到我点击字幕后渲染到视频上，假如我再次点击那个字幕则可以隐藏，相当于现在没有选中字幕一样，先给我你的计划
-
-こんいちは
+所以现在请你探索我的项目，然后给我你的修改计划（要修改什么文件，以及创造什么新的文件），有什么问题都可以问我先

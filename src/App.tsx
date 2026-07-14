@@ -6,11 +6,14 @@ import PredictionsPage from "@/pages/PredictionsPage";
 import AssetsPage from "@/pages/AssetsPage";
 import AnimePage from "@/pages/AnimePage";
 import AnimePlayPage from "@/pages/AnimePlayPage";
+import MusicPage from "@/pages/MusicPage";
+import { MusicPlayerProvider } from "@/contexts/MusicPlayerContext";
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
+    <MusicPlayerProvider>
+      <BrowserRouter>
+        <Routes>
         {/* Pages with Header */}
         <Route
           path="/"
@@ -57,10 +60,20 @@ export default function App() {
             </div>
           }
         />
+        <Route
+          path="/music"
+          element={
+            <div className="app">
+              <Header />
+              <MusicPage />
+            </div>
+          }
+        />
 
         {/* Standalone page without Header */}
         <Route path="/anime/play" element={<AnimePlayPage />} />
-      </Routes>
-    </BrowserRouter>
+        </Routes>
+      </BrowserRouter>
+    </MusicPlayerProvider>
   );
 }

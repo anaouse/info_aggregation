@@ -11,6 +11,9 @@
   --color-primary-500: #578c71;   /* hover 状态 */
   --color-primary-600: #446d58;   /* active 状态 */
   --color-primary-800: #273e32;   /* 深色文字、图标 */
+  --color-surface: #fff;          /* 通用白色表面 */
+  --color-on-primary: #fff;       /* 主色背景上的文字 */
+  --color-shadow: rgba(0, 0, 0, 0.12); /* 卡片阴影 */
 
   /* --- 警示色：玫瑰红 Rose (用于破坏性/警示按钮) --- */
   --color-danger-50:  #f4eeef;   /* 警示浅底色 */

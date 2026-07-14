@@ -78,6 +78,7 @@ func main() {
 	})
 
 	registerAnimeRoutes(r)
+	registerMusicRoutes(r)
 
 	r.GET("/api/sources", func(c *gin.Context) {
 		rows, err := db.Query("SELECT source_name, url FROM info_sources")

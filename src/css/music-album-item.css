@@ -1,0 +1,37 @@
+.music-album-item {
+  display: flex;
+  min-height: 140px;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 18px;
+  border: 1px solid var(--color-primary-100);
+  border-radius: 10px;
+  background: var(--color-primary-50);
+  transition: box-shadow 0.2s, transform 0.2s, border-color 0.2s;
+}
+
+.music-album-item:hover {
+  border-color: var(--color-primary-400);
+  box-shadow: 0 4px 12px var(--color-shadow);
+  transform: translateY(-4px);
+}
+
+.music-album-name {
+  width: 100%;
+  color: var(--color-primary-800);
+  font-size: 16px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.music-album-song-count {
+  margin-top: 6px;
+  color: var(--color-primary-400);
+  font-size: 13px;
+}
+
+.music-album-item button {
+  margin-top: auto;
+}

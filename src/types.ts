@@ -59,3 +59,22 @@ export interface SubtitleFile {
 export interface SubtitlesResponse {
   subtitles: SubtitleFile[];
 }
+
+export interface MusicSong {
+  name: string;
+  path: string;
+}
+
+export interface MusicAlbum {
+  name: string;
+  folder_path: string;
+  songs: MusicSong[];
+}
+
+export interface MusicScanResponse {
+  albums: MusicAlbum[];
+}
+
+export interface PlaylistSong extends MusicSong {
+  album_name: string;
+}

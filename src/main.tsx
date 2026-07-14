@@ -21,5 +21,11 @@ import '@/css/anime-play-page.css'
 import '@/css/custom-video-player.css'
 import '@/css/episode-selector.css'
 import '@/css/subtitle-selector.css'
+import '@/css/music-path-bar.css'
+import '@/css/music-player.css'
+import '@/css/music-playlist.css'
+import '@/css/music-album-list.css'
+import '@/css/music-album-item.css'
+import '@/css/music-page.css'
 
 createRoot(document.getElementById('root')!).render(<App />)
