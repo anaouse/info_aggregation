@@ -13,6 +13,7 @@ interface MusicPlayerContextValue {
   isPlaying: boolean;
   currentTime: number;
   duration: number;
+  volume: number;
   playbackMode: PlaybackMode;
   playAlbum: (songs: PlaylistSong[]) => void;
   playSongAt: (index: number) => void;
@@ -20,6 +21,7 @@ interface MusicPlayerContextValue {
   playPrevious: () => void;
   playNext: () => void;
   seekTo: (time: number) => void;
+  setVolume: (volume: number) => void;
   setPlaybackMode: (mode: PlaybackMode) => void;
 }
 
@@ -46,6 +48,7 @@ export function MusicPlayerProvider({ children }: MusicPlayerProviderProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [volume, setVolumeState] = useState(1);
   const [playbackMode, setPlaybackModeState] = useState<PlaybackMode>("sequential");
 
   const currentSong = currentIndex >= 0 ? playlist[currentIndex] ?? null : null;
@@ -123,6 +126,14 @@ export function MusicPlayerProvider({ children }: MusicPlayerProviderProps) {
     setCurrentTime(time);
   };
 
+  const setVolume = (nextVolume: number) => {
+    const normalizedVolume = Math.min(1, Math.max(0, nextVolume));
+    if (audioRef.current) {
+      audioRef.current.volume = normalizedVolume;
+    }
+    setVolumeState(normalizedVolume);
+  };
+
   const setPlaybackMode = (mode: PlaybackMode) => {
     if (mode === playbackMode) {
       return;
@@ -151,6 +162,7 @@ export function MusicPlayerProvider({ children }: MusicPlayerProviderProps) {
         isPlaying,
         currentTime,
         duration,
+        volume,
         playbackMode,
         playAlbum,
         playSongAt,
@@ -158,6 +170,7 @@ export function MusicPlayerProvider({ children }: MusicPlayerProviderProps) {
         playPrevious,
         playNext,
         seekTo,
+        setVolume,
         setPlaybackMode,
       }}
     >

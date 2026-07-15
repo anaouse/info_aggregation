@@ -33,6 +33,7 @@ var musicExtensions = map[string]bool{
 	".m4a":  true,
 	".aac":  true,
 	".ogg":  true,
+	".opus": true,
 	".wav":  true,
 	".flac": true,
 }
@@ -128,6 +129,9 @@ func registerMusicRoutes(r *gin.Engine) {
 		if _, err := os.Stat(path); err != nil {
 			c.JSON(http.StatusNotFound, gin.H{"error": "文件不存在"})
 			return
+		}
+		if strings.EqualFold(filepath.Ext(path), ".opus") {
+			c.Header("Content-Type", "audio/ogg")
 		}
 		c.File(path)
 	})
