@@ -19,11 +19,13 @@
 .music-album-name {
   width: 100%;
   color: var(--color-primary-800);
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
 .music-album-song-count {
