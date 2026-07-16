@@ -11,6 +11,11 @@
   overflow: hidden;
 }
 
+.custom-video-player.cursor-hidden,
+.custom-video-player.cursor-hidden .custom-video-player-video {
+  cursor: none;
+}
+
 /* Video element */
 .custom-video-player-video {
   width: 100%;

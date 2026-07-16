@@ -198,7 +198,11 @@ export default function CustomVideoPlayer({
   return (
     <div
       ref={containerRef}
-      className="custom-video-player"
+      className={`custom-video-player${
+        isFullscreen && !showControls && !showEpisodeSelector && !showSubtitleSelector
+          ? " cursor-hidden"
+          : ""
+      }`}
       onMouseMove={resetControlsTimeout}
       onMouseLeave={() => isPlaying && setShowControls(false)}
     >
