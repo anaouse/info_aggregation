@@ -1,6 +1,7 @@
+import axios from "axios";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
-import type { PlaylistSong } from "@/types";
+import type { MusicAlbum, MusicFavoritesResponse, PlaylistSong } from "@/types";
 
 const API_BASE = "http://localhost:1233";
 
@@ -16,6 +17,10 @@ interface MusicPlayerContextValue {
   volume: number;
   playbackMode: PlaybackMode;
   playAlbum: (songs: PlaylistSong[]) => void;
+  setMusicLibrary: (rootPath: string, albums: MusicAlbum[]) => void;
+  toggleFavorite: (song: PlaylistSong) => Promise<void>;
+  isFavorite: (song: PlaylistSong) => boolean;
+  playFavorites: () => void;
   playSongAt: (index: number) => void;
   togglePlay: () => void;
   playPrevious: () => void;
@@ -50,8 +55,45 @@ export function MusicPlayerProvider({ children }: MusicPlayerProviderProps) {
   const [duration, setDuration] = useState(0);
   const [volume, setVolumeState] = useState(1);
   const [playbackMode, setPlaybackModeState] = useState<PlaybackMode>("sequential");
+  const [musicRoot, setMusicRoot] = useState("");
+  const [musicLibrary, setMusicLibrarySongs] = useState<PlaylistSong[]>([]);
+  const [favoritePaths, setFavoritePaths] = useState<string[]>([]);
 
   const currentSong = currentIndex >= 0 ? playlist[currentIndex] ?? null : null;
+
+  const normalizePath = (path: string) => path.replace(/\\/g, "/").toLowerCase();
+
+  const setMusicLibrary = (rootPath: string, albums: MusicAlbum[]) => {
+    setMusicRoot(rootPath);
+    setMusicLibrarySongs(albums.flatMap((album) =>
+      album.songs.map((song) => ({ ...song, album_name: album.name })),
+    ));
+    axios
+      .get<MusicFavoritesResponse>(`${API_BASE}/api/music/favorites`, { params: { rootPath } })
+      .then((response) => setFavoritePaths(response.data.favorites))
+      .catch(() => setFavoritePaths([]));
+  };
+
+  const favoriteAbsolutePaths = favoritePaths.map((path) =>
+    normalizePath(`${musicRoot.replace(/[\\/]$/, "")}/${path}`),
+  );
+
+  const isFavorite = (song: PlaylistSong) => favoriteAbsolutePaths.includes(normalizePath(song.path));
+
+  const toggleFavorite = async (song: PlaylistSong) => {
+    if (!musicRoot) {
+      return;
+    }
+    const response = isFavorite(song)
+      ? await axios.delete<MusicFavoritesResponse>(`${API_BASE}/api/music/favorites`, {
+          data: { rootPath: musicRoot, path: song.path },
+        })
+      : await axios.post<MusicFavoritesResponse>(`${API_BASE}/api/music/favorites`, {
+          rootPath: musicRoot,
+          path: song.path,
+        });
+    setFavoritePaths(response.data.favorites);
+  };
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -78,6 +120,19 @@ export function MusicPlayerProvider({ children }: MusicPlayerProviderProps) {
     setPlaylist(nextPlaylist);
     setCurrentIndex(0);
     setIsPlaying(true);
+  };
+
+  const playFavorites = () => {
+    const favoriteSongs = musicLibrary.filter(isFavorite);
+    if (favoriteSongs.length === 0) {
+      audioRef.current?.pause();
+      setOriginalPlaylist([]);
+      setPlaylist([]);
+      setCurrentIndex(-1);
+      setIsPlaying(false);
+      return;
+    }
+    playAlbum(favoriteSongs);
   };
 
   const playSongAt = (index: number) => {
@@ -165,6 +220,10 @@ export function MusicPlayerProvider({ children }: MusicPlayerProviderProps) {
         volume,
         playbackMode,
         playAlbum,
+        setMusicLibrary,
+        toggleFavorite,
+        isFavorite,
+        playFavorites,
         playSongAt,
         togglePlay,
         playPrevious,

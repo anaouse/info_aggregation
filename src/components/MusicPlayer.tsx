@@ -23,6 +23,7 @@ export default function MusicPlayer() {
     seekTo,
     setVolume,
     setPlaybackMode,
+    playFavorites,
   } = useMusicPlayer();
 
   return (
@@ -44,6 +45,7 @@ export default function MusicPlayer() {
           >
             {playbackMode === "shuffle" ? "随机播放" : "顺序播放"}
           </button>
+          <button className="music-player-heart-mode" onClick={playFavorites}>心动模式</button>
         </div>
         <div className="music-player-volume">
           <span>音量</span>

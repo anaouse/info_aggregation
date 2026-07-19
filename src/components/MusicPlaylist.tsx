@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useMusicPlayer } from "@/contexts/MusicPlayerContext";
 
 export default function MusicPlaylist() {
-  const { playlist, currentIndex, playSongAt } = useMusicPlayer();
+  const { playlist, currentIndex, playSongAt, toggleFavorite, isFavorite } = useMusicPlayer();
   const [keyword, setKeyword] = useState("");
 
   const filteredSongs = useMemo(
@@ -35,17 +35,26 @@ export default function MusicPlaylist() {
       ) : (
         <div className="music-playlist-items">
           {filteredSongs.map(({ song, index }) => (
-            <button
+            <div
               key={song.path}
               className={index === currentIndex ? "music-playlist-item active" : "music-playlist-item"}
-              onClick={() => handlePlaySong(index)}
             >
-              <span className="music-playlist-index">{index + 1}</span>
-              <span className="music-playlist-song">
-                <span>{song.name}</span>
-                <small>{song.album_name}</small>
-              </span>
-            </button>
+              <button className="music-playlist-play" onClick={() => handlePlaySong(index)}>
+                <span className="music-playlist-index">{index + 1}</span>
+                <span className="music-playlist-song">
+                  <span>{song.name}</span>
+                  <small>{song.album_name}</small>
+                </span>
+              </button>
+              <button
+                className={isFavorite(song) ? "music-playlist-favorite active" : "music-playlist-favorite"}
+                onClick={() => toggleFavorite(song)}
+                aria-label={isFavorite(song) ? "取消最爱" : "加入最爱"}
+                title={isFavorite(song) ? "取消最爱" : "加入最爱"}
+              >
+                {isFavorite(song) ? "♥" : "♡"}
+              </button>
+            </div>
           ))}
         </div>
       )}

@@ -46,14 +46,9 @@
 .music-playlist-item {
   display: flex;
   width: 100%;
-  gap: 12px;
-  padding: 10px 16px;
-  border: none;
   border-top: 1px solid var(--color-primary-100);
   background: var(--color-surface);
   color: var(--color-primary-800);
-  text-align: left;
-  cursor: pointer;
 }
 
 .music-playlist-item:hover,
@@ -63,7 +58,33 @@
 
 .music-playlist-item.active {
   border-left: 4px solid var(--color-primary-400);
-  padding-left: 12px;
+}
+
+.music-playlist-play {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  gap: 12px;
+  padding: 10px 16px;
+  border: none;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.music-playlist-favorite {
+  width: 52px;
+  border: none;
+  background: transparent;
+  color: var(--color-primary-400);
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.music-playlist-favorite:hover,
+.music-playlist-favorite.active {
+  color: var(--color-danger-400);
 }
 
 .music-playlist-index {

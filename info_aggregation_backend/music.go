@@ -1,11 +1,13 @@
 package main
 
 import (
+	"encoding/json"
 	"net/http"
 	"os"
 	"path/filepath"
 	"sort"
 	"strings"
+	"sync"
 
 	"github.com/gin-gonic/gin"
 )
@@ -13,6 +15,12 @@ import (
 // MusicScanRequest is the request body for scanning a music root directory.
 type MusicScanRequest struct {
 	RootPath string `json:"rootPath"`
+}
+
+// MusicFavoriteRequest is the request body for adding or removing a favorite song.
+type MusicFavoriteRequest struct {
+	RootPath string `json:"rootPath"`
+	Path     string `json:"path"`
 }
 
 // MusicSong represents a music file in an album folder.
@@ -36,6 +44,58 @@ var musicExtensions = map[string]bool{
 	".opus": true,
 	".wav":  true,
 	".flac": true,
+}
+
+var favoriteFileMutex sync.Mutex
+
+func favoriteFilePath(rootPath string) string {
+	return filepath.Join(rootPath, "favorite.json")
+}
+
+func readFavoritePaths(rootPath string) ([]string, error) {
+	data, err := os.ReadFile(favoriteFilePath(rootPath))
+	if os.IsNotExist(err) {
+		return []string{}, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	favorites := make([]string, 0)
+	if err := json.Unmarshal(data, &favorites); err != nil {
+		return nil, err
+	}
+	return favorites, nil
+}
+
+func writeFavoritePaths(rootPath string, favorites []string) error {
+	data, err := json.MarshalIndent(favorites, "", "  ")
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(favoriteFilePath(rootPath), data, 0644)
+}
+
+func favoriteRelativePath(rootPath string, songPath string) (string, error) {
+	relativePath, err := filepath.Rel(rootPath, songPath)
+	if err != nil {
+		return "", err
+	}
+	if relativePath == ".." || strings.HasPrefix(relativePath, ".."+string(filepath.Separator)) {
+		return "", os.ErrPermission
+	}
+	return relativePath, nil
+}
+
+func validateMusicRoot(rootPath string) error {
+	stat, err := os.Stat(rootPath)
+	if err != nil {
+		return err
+	}
+	if !stat.IsDir() {
+		return os.ErrInvalid
+	}
+	return nil
 }
 
 // scanMusicRoot reads direct child folders as albums and direct files as songs.
@@ -91,6 +151,103 @@ func scanMusicRoot(rootPath string) ([]MusicAlbum, error) {
 
 // registerMusicRoutes wires up music directory scanning and audio serving endpoints.
 func registerMusicRoutes(r *gin.Engine) {
+	r.GET("/api/music/favorites", func(c *gin.Context) {
+		rootPath := c.Query("rootPath")
+		if rootPath == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "rootPath 不能为空"})
+			return
+		}
+		if err := validateMusicRoot(rootPath); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "路径不存在或不是文件夹"})
+			return
+		}
+
+		favoriteFileMutex.Lock()
+		favorites, err := readFavoritePaths(rootPath)
+		favoriteFileMutex.Unlock()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "读取 favorite.json 失败", "detail": err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"favorites": favorites})
+	})
+
+	r.POST("/api/music/favorites", func(c *gin.Context) {
+		var req MusicFavoriteRequest
+		if err := c.ShouldBindJSON(&req); err != nil || req.RootPath == "" || req.Path == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "rootPath 和 path 不能为空"})
+			return
+		}
+		if err := validateMusicRoot(req.RootPath); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "路径不存在或不是文件夹"})
+			return
+		}
+		relativePath, err := favoriteRelativePath(req.RootPath, req.Path)
+		if err != nil || !musicExtensions[strings.ToLower(filepath.Ext(relativePath))] {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "音乐文件不在音乐根目录内或格式不受支持"})
+			return
+		}
+		if stat, err := os.Stat(req.Path); err != nil || stat.IsDir() {
+			c.JSON(http.StatusNotFound, gin.H{"error": "音乐文件不存在"})
+			return
+		}
+
+		favoriteFileMutex.Lock()
+		defer favoriteFileMutex.Unlock()
+		favorites, err := readFavoritePaths(req.RootPath)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "读取 favorite.json 失败", "detail": err.Error()})
+			return
+		}
+		for _, favorite := range favorites {
+			if filepath.Clean(favorite) == filepath.Clean(relativePath) {
+				c.JSON(http.StatusOK, gin.H{"favorites": favorites})
+				return
+			}
+		}
+		favorites = append(favorites, relativePath)
+		if err := writeFavoritePaths(req.RootPath, favorites); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "写入 favorite.json 失败", "detail": err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"favorites": favorites})
+	})
+
+	r.DELETE("/api/music/favorites", func(c *gin.Context) {
+		var req MusicFavoriteRequest
+		if err := c.ShouldBindJSON(&req); err != nil || req.RootPath == "" || req.Path == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "rootPath 和 path 不能为空"})
+			return
+		}
+		if err := validateMusicRoot(req.RootPath); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "路径不存在或不是文件夹"})
+			return
+		}
+		relativePath, err := favoriteRelativePath(req.RootPath, req.Path)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "音乐文件不在音乐根目录内"})
+			return
+		}
+
+		favoriteFileMutex.Lock()
+		defer favoriteFileMutex.Unlock()
+		favorites, err := readFavoritePaths(req.RootPath)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "读取 favorite.json 失败", "detail": err.Error()})
+			return
+		}
+		updatedFavorites := make([]string, 0, len(favorites))
+		for _, favorite := range favorites {
+			if filepath.Clean(favorite) != filepath.Clean(relativePath) {
+				updatedFavorites = append(updatedFavorites, favorite)
+			}
+		}
+		if err := writeFavoritePaths(req.RootPath, updatedFavorites); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "写入 favorite.json 失败", "detail": err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"favorites": updatedFavorites})
+	})
 	r.POST("/api/music/scan", func(c *gin.Context) {
 		var req MusicScanRequest
 		if err := c.ShouldBindJSON(&req); err != nil {

@@ -15,7 +15,7 @@ export default function MusicPage() {
   const [keyword, setKeyword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { playAlbum } = useMusicPlayer();
+  const { playAlbum, setMusicLibrary } = useMusicPlayer();
 
   useEffect(() => {
     const savedPath = localStorage.getItem(STORAGE_KEY) || "D:\\projects\\my_music";
@@ -23,11 +23,15 @@ export default function MusicPage() {
   }, []);
 
   const handleScan = (path: string) => {
+    localStorage.setItem(STORAGE_KEY, path);
     setLoading(true);
     setError(null);
     axios
       .post<MusicScanResponse>(`${API_BASE}/api/music/scan`, { rootPath: path })
-      .then((response) => setAlbums(response.data.albums))
+      .then((response) => {
+        setAlbums(response.data.albums);
+        setMusicLibrary(path, response.data.albums);
+      })
       .catch((requestError) => setError(requestError.response?.data?.error || requestError.message))
       .finally(() => setLoading(false));
   };

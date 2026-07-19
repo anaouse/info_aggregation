@@ -75,6 +75,10 @@ export interface MusicScanResponse {
   albums: MusicAlbum[];
 }
 
+export interface MusicFavoritesResponse {
+  favorites: string[];
+}
+
 export interface PlaylistSong extends MusicSong {
   album_name: string;
 }
