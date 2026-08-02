@@ -127,9 +127,12 @@ func scanVideosInFolder(folderPath string) ([]VideoFile, error) {
 		return nil, err
 	}
 
-	// Sort by creation/modification time (earliest first)
+	// Sort by file name ascending (e.g. "xxxx -01 xxx")
 	sort.Slice(videos, func(i, j int) bool {
-		return videos[i].ModTime < videos[j].ModTime
+		if videos[i].Name != videos[j].Name {
+			return videos[i].Name < videos[j].Name
+		}
+		return videos[i].Path < videos[j].Path
 	})
 
 	return videos, nil

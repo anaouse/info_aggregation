@@ -1,0 +1,122 @@
+.routine-list {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 20px;
+  padding: 24px;
+  border: 1px solid var(--color-primary-100);
+  border-radius: 8px;
+  background-color: var(--color-primary-50);
+  width: fit-content;
+}
+
+.routine-list-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-primary-800);
+}
+
+.routine-list-body {
+  width: 360px;
+}
+
+.routine-list-add-row {
+  display: flex;
+  gap: 10px;
+}
+
+.routine-list-input {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 10px;
+  font-size: 0.95rem;
+  border: 1px solid var(--color-primary-100);
+  border-radius: 4px;
+  background: var(--color-surface);
+  color: var(--color-primary-800);
+  outline: none;
+}
+
+.routine-list-input:focus {
+  border-color: var(--color-primary-400);
+}
+
+.routine-list-input::placeholder {
+  color: var(--color-primary-200);
+}
+
+.routine-list-add-button,
+.routine-list-delete-button {
+  padding: 6px 14px;
+  font-size: 0.9rem;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.routine-list-add-button {
+  border: none;
+  background-color: var(--color-primary-400);
+  color: var(--color-on-primary);
+}
+
+.routine-list-add-button:hover {
+  background-color: var(--color-primary-500);
+}
+
+.routine-list-add-button:active {
+  background-color: var(--color-primary-600);
+}
+
+.routine-list-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.routine-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 10px;
+  border: 1px solid var(--color-primary-100);
+  border-radius: 4px;
+  background: var(--color-surface);
+  color: var(--color-primary-800);
+}
+
+.routine-list-item label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.routine-list-item label span {
+  overflow-wrap: anywhere;
+}
+
+.routine-list-item-completed span {
+  color: var(--color-primary-200);
+  text-decoration: line-through;
+}
+
+.routine-list-delete-button {
+  border: 1px solid var(--color-danger-100);
+  background: transparent;
+  color: var(--color-danger-400);
+}
+
+.routine-list-delete-button:hover {
+  background: var(--color-danger-50);
+}
+
+.routine-list-delete-button:active {
+  color: var(--color-danger-600);
+}
