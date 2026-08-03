@@ -75,6 +75,29 @@
   background: var(--color-primary-600);
 }
 
+.assets-list-note {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 72px;
+  margin-bottom: 16px;
+  padding: 8px 12px;
+  font: inherit;
+  border: 1px solid var(--color-primary-100);
+  border-radius: 8px;
+  outline: none;
+  resize: vertical;
+  background: #fff;
+  color: var(--color-primary-800);
+}
+
+.assets-list-note::placeholder {
+  color: var(--color-primary-200);
+}
+
+.assets-list-note:focus {
+  border-color: var(--color-primary-400);
+}
+
 .assets-list-items {
   margin-bottom: 12px;
 }

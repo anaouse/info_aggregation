@@ -13,8 +13,40 @@ import {
 
 const API_BASE = "http://localhost:1233";
 
+interface ChartPoint {
+  date: string;
+  total: number;
+  change: string;
+}
+
+interface ChartTooltipProps {
+  active?: boolean;
+  payload?: { payload: ChartPoint }[];
+}
+
+function ChartTooltip({ active, payload }: ChartTooltipProps) {
+  if (!active || !payload?.length) return null;
+
+  const point = payload[0].payload;
+  return (
+    <div
+      style={{
+        border: "1px solid var(--color-primary-100)",
+        borderRadius: 8,
+        padding: "8px 12px",
+        fontSize: 13,
+        background: "#fff",
+      }}
+    >
+      <div>日期：{point.date}</div>
+      <div>总金额：{point.total}</div>
+      <div>相对上月变化：{point.change}</div>
+    </div>
+  );
+}
+
 export default function TotalMoneyChart() {
-  const [data, setData] = useState<{ date: string; total: number }[]>([]);
+  const [data, setData] = useState<ChartPoint[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -27,7 +59,14 @@ export default function TotalMoneyChart() {
             date: s.assets_snapshot_date.slice(0, 7),
             total: s.total!,
           }))
-          .reverse(); // API returns DESC, chart needs ASC
+          .reverse() // API returns DESC, chart needs ASC
+          .map((point, index, points) => ({
+            ...point,
+            change:
+              index === 0 || points[index - 1].total === 0
+                ? "无"
+                : `${((point.total - points[index - 1].total) / points[index - 1].total * 100).toFixed(2)}%`,
+          }));
         setData(points);
       })
       .catch(() => setData([]))
@@ -62,13 +101,7 @@ export default function TotalMoneyChart() {
             axisLine={false}
             tickLine={false}
           />
-          <Tooltip
-            contentStyle={{
-              border: "1px solid var(--color-primary-100)",
-              borderRadius: 8,
-              fontSize: 13,
-            }}
-          />
+          <Tooltip content={<ChartTooltip />} />
           <Line
             type="monotone"
             dataKey="total"

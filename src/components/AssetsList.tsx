@@ -13,20 +13,11 @@ function getDefaultDate(): string {
   return `${yyyy}-${mm}-01`;
 }
 
-/** Format "YYYY-MM-01" → "YYYY-MM" for <input type="month"> */
-function toMonthValue(date: string): string {
-  return date.slice(0, 7);
-}
-
-/** Format "YYYY-MM" → "YYYY-MM-01" */
-function toDateValue(month: string): string {
-  return month + "-01";
-}
-
 export default function AssetsList() {
   const [date, setDate] = useState(getDefaultDate);
   const [assets, setAssets] = useState<AssetItem[]>([{ name: "", amount: 0 }]);
   const [total, setTotal] = useState("");
+  const [note, setNote] = useState("");
   const [snapshots, setSnapshots] = useState<AssetSnapshot[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -74,6 +65,7 @@ export default function AssetsList() {
         date,
         assets: validAssets.map((a) => ({ name: a.name.trim(), amount: a.amount })),
         total: totalValue,
+        note: note.trim() === "" ? null : note.trim(),
       })
       .then((res) => {
         // Refresh snapshots list
@@ -103,6 +95,7 @@ export default function AssetsList() {
         : [{ name: "", amount: 0 }]
     );
     setTotal(snapshot.total != null ? String(snapshot.total) : "");
+    setNote(snapshot.note ?? "");
   };
 
   if (loading) return <div>加载中...</div>;
@@ -114,10 +107,10 @@ export default function AssetsList() {
       <div className="assets-list-editor">
         <div className="assets-list-header">
           <input
-            type="month"
+            type="date"
             className="assets-list-date"
-            value={toMonthValue(date)}
-            onChange={(e) => setDate(toDateValue(e.target.value))}
+            value={date}
+            onChange={(e) => setDate(`${e.target.value.slice(0, 7)}-01`)}
           />
           <input
             type="number"
@@ -130,6 +123,12 @@ export default function AssetsList() {
             确认保存
           </button>
         </div>
+        <textarea
+          className="assets-list-note"
+          placeholder="说明"
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+        />
 
         <div className="assets-list-items">
           {assets.map((item, i) => (
@@ -162,6 +161,7 @@ export default function AssetsList() {
                   <th>月份</th>
                   <th>资产明细</th>
                   <th>总金额</th>
+                  <th>说明</th>
                 </tr>
               </thead>
               <tbody>
@@ -182,6 +182,7 @@ export default function AssetsList() {
                     <td className="assets-list-table-total">
                       {s.total != null ? s.total : ""}
                     </td>
+                    <td>{s.note ?? ""}</td>
                   </tr>
                 ))}
               </tbody>

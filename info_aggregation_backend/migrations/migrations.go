@@ -68,4 +68,11 @@ CREATE TABLE IF NOT EXISTS assets_snapshots (
 ALTER TABLE assets_snapshots ADD COLUMN total REAL;
 `,
 	},
+	{
+		Version: 6,
+		Name:    "assets_snapshots_add_note",
+		Up: `
+ALTER TABLE assets_snapshots ADD COLUMN note TEXT;
+`,
+	},
 }

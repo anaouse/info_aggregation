@@ -21,6 +21,7 @@ export interface AssetSnapshot {
   assets_snapshot_date: string;
   assets: AssetItem[];
   total: number | null;
+  note: string | null;
   created_at: string;
   updated_at: string;
 }

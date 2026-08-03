@@ -42,6 +42,7 @@ type AssetSnapshotRequest struct {
 	Date  string      `json:"date"`
 	Items []AssetItem `json:"assets"`
 	Total *float64    `json:"total"`
+	Note  *string     `json:"note"`
 }
 
 type AssetSnapshot struct {
@@ -49,6 +50,7 @@ type AssetSnapshot struct {
 	AssetsSnapshotDate string      `json:"assets_snapshot_date"`
 	Assets             []AssetItem `json:"assets"`
 	Total              *float64    `json:"total"`
+	Note               *string     `json:"note"`
 	CreatedAt          string      `json:"created_at"`
 	UpdatedAt          string      `json:"updated_at"`
 }
@@ -251,7 +253,7 @@ func main() {
 	// GET /api/assets_snapshots - 返回所有资产快照
 	r.GET("/api/assets_snapshots", func(c *gin.Context) {
 		rows, err := db.Query(
-			"SELECT id, assets_snapshot_date, assets, total, created_at, updated_at FROM assets_snapshots ORDER BY assets_snapshot_date DESC",
+			"SELECT id, assets_snapshot_date, assets, total, note, created_at, updated_at FROM assets_snapshots ORDER BY assets_snapshot_date DESC",
 		)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -263,7 +265,7 @@ func main() {
 		for rows.Next() {
 			var s AssetSnapshot
 			var assetsJSON string
-			if err := rows.Scan(&s.ID, &s.AssetsSnapshotDate, &assetsJSON, &s.Total, &s.CreatedAt, &s.UpdatedAt); err != nil {
+			if err := rows.Scan(&s.ID, &s.AssetsSnapshotDate, &assetsJSON, &s.Total, &s.Note, &s.CreatedAt, &s.UpdatedAt); err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 				return
 			}
@@ -325,13 +327,14 @@ func main() {
 
 		// INSERT ... ON CONFLICT DO UPDATE
 		result, err := db.Exec(
-			`INSERT INTO assets_snapshots (assets_snapshot_date, assets, total, created_at, updated_at)
-			 VALUES (?, ?, ?, ?, ?)
+			`INSERT INTO assets_snapshots (assets_snapshot_date, assets, total, note, created_at, updated_at)
+			 VALUES (?, ?, ?, ?, ?, ?)
 			 ON CONFLICT(assets_snapshot_date) DO UPDATE SET
 			   assets = excluded.assets,
 			   total = excluded.total,
+			   note = excluded.note,
 			   updated_at = excluded.updated_at`,
-			req.Date, string(assetsJSON), req.Total, now, now,
+			req.Date, string(assetsJSON), req.Total, req.Note, now, now,
 		)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -347,9 +350,9 @@ func main() {
 		var snapshot AssetSnapshot
 		var assetsStr string
 		err = db.QueryRow(
-			"SELECT id, assets_snapshot_date, assets, total, created_at, updated_at FROM assets_snapshots WHERE assets_snapshot_date = ?",
+			"SELECT id, assets_snapshot_date, assets, total, note, created_at, updated_at FROM assets_snapshots WHERE assets_snapshot_date = ?",
 			req.Date,
-		).Scan(&snapshot.ID, &snapshot.AssetsSnapshotDate, &assetsStr, &snapshot.Total, &snapshot.CreatedAt, &snapshot.UpdatedAt)
+		).Scan(&snapshot.ID, &snapshot.AssetsSnapshotDate, &assetsStr, &snapshot.Total, &snapshot.Note, &snapshot.CreatedAt, &snapshot.UpdatedAt)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
