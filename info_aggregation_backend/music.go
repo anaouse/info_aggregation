@@ -9,6 +9,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/dhowden/tag"
 	"github.com/gin-gonic/gin"
 )
 
@@ -33,6 +34,7 @@ type MusicSong struct {
 type MusicAlbum struct {
 	Name       string      `json:"name"`
 	FolderPath string      `json:"folder_path"`
+	CoverPath  string      `json:"cover_path"`
 	Songs      []MusicSong `json:"songs"`
 }
 
@@ -98,6 +100,34 @@ func validateMusicRoot(rootPath string) error {
 	return nil
 }
 
+// listMusicSongs reads the music files directly inside a folder, sorted by name.
+func listMusicSongs(folderPath string) []MusicSong {
+	entries, err := os.ReadDir(folderPath)
+	if err != nil {
+		return nil
+	}
+
+	songs := make([]MusicSong, 0)
+	for _, entry := range entries {
+		if entry.IsDir() {
+			continue
+		}
+		if !musicExtensions[strings.ToLower(filepath.Ext(entry.Name()))] {
+			continue
+		}
+		songs = append(songs, MusicSong{
+			Name: entry.Name(),
+			Path: filepath.Join(folderPath, entry.Name()),
+		})
+	}
+
+	sort.Slice(songs, func(i, j int) bool {
+		return songs[i].Name < songs[j].Name
+	})
+
+	return songs
+}
+
 // scanMusicRoot reads direct child folders as albums and direct files as songs.
 func scanMusicRoot(rootPath string) ([]MusicAlbum, error) {
 	entries, err := os.ReadDir(rootPath)
@@ -112,32 +142,12 @@ func scanMusicRoot(rootPath string) ([]MusicAlbum, error) {
 		}
 
 		folderPath := filepath.Join(rootPath, entry.Name())
-		albumEntries, err := os.ReadDir(folderPath)
-		if err != nil {
-			continue
-		}
-
-		songs := make([]MusicSong, 0)
-		for _, albumEntry := range albumEntries {
-			if albumEntry.IsDir() {
-				continue
-			}
-			if !musicExtensions[strings.ToLower(filepath.Ext(albumEntry.Name()))] {
-				continue
-			}
-			songs = append(songs, MusicSong{
-				Name: albumEntry.Name(),
-				Path: filepath.Join(folderPath, albumEntry.Name()),
-			})
-		}
-
-		sort.Slice(songs, func(i, j int) bool {
-			return songs[i].Name < songs[j].Name
-		})
+		songs := listMusicSongs(folderPath)
 
 		albums = append(albums, MusicAlbum{
 			Name:       entry.Name(),
 			FolderPath: folderPath,
+			CoverPath:  albumCoverCachePath(rootPath, entry.Name()),
 			Songs:      songs,
 		})
 	}
@@ -147,6 +157,98 @@ func scanMusicRoot(rootPath string) ([]MusicAlbum, error) {
 	})
 
 	return albums, nil
+}
+
+var coverImageExtensions = map[string]bool{
+	".jpg":  true,
+	".jpeg": true,
+	".png":  true,
+}
+
+// infoCoverDir returns the folder used to cache extracted album covers.
+func infoCoverDir(rootPath string) string {
+	return filepath.Join(rootPath, "info_cover")
+}
+
+// albumCoverCachePath returns the cached cover file path for an album, or "".
+func albumCoverCachePath(rootPath, albumName string) string {
+	entries, err := os.ReadDir(infoCoverDir(rootPath))
+	if err != nil {
+		return ""
+	}
+	prefix := albumName + "."
+	for _, entry := range entries {
+		if entry.IsDir() {
+			continue
+		}
+		name := entry.Name()
+		if strings.HasPrefix(name, prefix) && coverImageExtensions[strings.ToLower(filepath.Ext(name))] {
+			return filepath.Join(infoCoverDir(rootPath), name)
+		}
+	}
+	return ""
+}
+
+// albumNoCoverMarked reports whether the album is already known to have no cover.
+func albumNoCoverMarked(rootPath, albumName string) bool {
+	_, err := os.Stat(filepath.Join(infoCoverDir(rootPath), albumName+".none"))
+	return err == nil
+}
+
+// readCover extracts the embedded cover picture from a music file, if any.
+func readCover(path string) (*tag.Picture, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	m, err := tag.ReadFrom(f)
+	if err != nil {
+		return nil, err
+	}
+	return m.Picture(), nil
+}
+
+// normalizeCoverExt maps a picture extension to a safe image extension.
+func normalizeCoverExt(pic *tag.Picture) string {
+	ext := strings.ToLower(strings.TrimPrefix(pic.Ext, "."))
+	if ext == "jpeg" {
+		ext = "jpg"
+	}
+	if ext != "jpg" && ext != "png" {
+		ext = "jpg"
+	}
+	return ext
+}
+
+// extractAlbumCover extracts the first embedded cover found among the album's
+// songs and writes it into the info_cover cache folder. It returns the written
+// file path, or "" when no song has a cover (after marking the album as coverless).
+func extractAlbumCover(rootPath, folderPath, albumName string) (string, error) {
+	songs := listMusicSongs(folderPath)
+	coverDir := infoCoverDir(rootPath)
+	if err := os.MkdirAll(coverDir, 0755); err != nil {
+		return "", err
+	}
+
+	for _, song := range songs {
+		pic, err := readCover(song.Path)
+		if err != nil || pic == nil || len(pic.Data) == 0 {
+			continue
+		}
+
+		coverPath := filepath.Join(coverDir, albumName+"."+normalizeCoverExt(pic))
+		if err := os.WriteFile(coverPath, pic.Data, 0644); err != nil {
+			return "", err
+		}
+		return coverPath, nil
+	}
+
+	if err := os.WriteFile(filepath.Join(coverDir, albumName+".none"), nil, 0644); err != nil {
+		return "", err
+	}
+	return "", nil
 }
 
 // registerMusicRoutes wires up music directory scanning and audio serving endpoints.
@@ -271,6 +373,46 @@ func registerMusicRoutes(r *gin.Engine) {
 			return
 		}
 		c.JSON(http.StatusOK, gin.H{"albums": albums})
+	})
+
+	r.GET("/api/music/cover", func(c *gin.Context) {
+		folderPath := c.Query("folderPath")
+		if folderPath == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "folderPath 不能为空"})
+			return
+		}
+		if stat, err := os.Stat(folderPath); err != nil || !stat.IsDir() {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "专辑路径不存在或不是文件夹"})
+			return
+		}
+
+		rootPath := filepath.Dir(folderPath)
+		if err := validateMusicRoot(rootPath); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "路径不存在或不是文件夹"})
+			return
+		}
+
+		albumName := filepath.Base(folderPath)
+
+		if coverPath := albumCoverCachePath(rootPath, albumName); coverPath != "" {
+			c.File(coverPath)
+			return
+		}
+		if albumNoCoverMarked(rootPath, albumName) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "无封面"})
+			return
+		}
+
+		coverPath, err := extractAlbumCover(rootPath, folderPath, albumName)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "提取封面失败", "detail": err.Error()})
+			return
+		}
+		if coverPath == "" {
+			c.JSON(http.StatusNotFound, gin.H{"error": "无封面"})
+			return
+		}
+		c.File(coverPath)
 	})
 
 	r.GET("/api/music/audio", func(c *gin.Context) {

@@ -9,10 +9,12 @@ import { useMusicPlayer } from "@/contexts/MusicPlayerContext";
 
 const API_BASE = "http://localhost:1233";
 const STORAGE_KEY = "music_root_path";
+const PAGE_SIZE = 24;
 
 export default function MusicPage() {
   const [albums, setAlbums] = useState<MusicAlbum[]>([]);
   const [keyword, setKeyword] = useState("");
+  const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { playAlbum, setMusicLibrary } = useMusicPlayer();
@@ -26,6 +28,8 @@ export default function MusicPage() {
     localStorage.setItem(STORAGE_KEY, path);
     setLoading(true);
     setError(null);
+    setPage(0);
+    setKeyword("");
     axios
       .post<MusicScanResponse>(`${API_BASE}/api/music/scan`, { rootPath: path })
       .then((response) => {
@@ -41,6 +45,10 @@ export default function MusicPage() {
     [albums, keyword],
   );
 
+  const totalPages = Math.max(1, Math.ceil(filteredAlbums.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages - 1);
+  const pageAlbums = filteredAlbums.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE);
+
   return (
     <main className="music-page">
       <MusicPathBar onScan={handleScan} />
@@ -55,10 +63,27 @@ export default function MusicPage() {
             type="search"
             placeholder="按专辑名称搜索"
             value={keyword}
-            onChange={(event) => setKeyword(event.target.value)}
+            onChange={(event) => {
+              setKeyword(event.target.value);
+              setPage(0);
+            }}
           />
         </div>
-        {!loading && !error && <MusicAlbumList albums={filteredAlbums} onPlayAlbum={playAlbum} />}
+        {!loading && !error && <MusicAlbumList albums={pageAlbums} onPlayAlbum={playAlbum} />}
+        {!loading && !error && filteredAlbums.length > 0 && (
+          <div className="music-album-pagination">
+            <button onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={currentPage === 0}>
+              上一页
+            </button>
+            <span>{currentPage + 1} / {totalPages}</span>
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+              disabled={currentPage >= totalPages - 1}
+            >
+              下一页
+            </button>
+          </div>
+        )}
       </section>
     </main>
   );

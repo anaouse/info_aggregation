@@ -44,6 +44,23 @@
   border-color: var(--color-primary-400);
 }
 
+.music-album-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.music-album-pagination button {
+  padding: 8px 18px;
+}
+
+.music-album-pagination span {
+  color: var(--color-primary-800);
+  font-size: 14px;
+}
+
 @media (max-width: 640px) {
   .music-path-bar,
   .music-albums-heading,

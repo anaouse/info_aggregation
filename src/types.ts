@@ -69,6 +69,7 @@ export interface MusicSong {
 export interface MusicAlbum {
   name: string;
   folder_path: string;
+  cover_path: string;
   songs: MusicSong[];
 }
 
